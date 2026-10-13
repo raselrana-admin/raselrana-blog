@@ -8,6 +8,7 @@ export const RESERVED_SLUGS = new Set([
   "api",
   "author",
   "category",
+  "coming-soon",
   "feed",
   "login",
   "page",

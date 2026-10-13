@@ -148,6 +148,10 @@ Login rate limiting (`src/lib/login-rate-limit.js`): every attempt is stored as 
 - `POST /api/posts`, `PATCH /api/posts/[id]` — any signed-in user who may edit the post; setting a status other than `DRAFT` needs `ADMIN`. The editor always sends the full post, including `status`.
 - `DELETE /api/posts/[id]` — `ADMIN`, and only for a draft that was never published (409 otherwise; archive instead).
 
+### Vercel analytics
+
+`src/app/layout.js` renders `<Analytics />` (visitors) and `<SpeedInsights />` (page speed). Their scripts load from `/_vercel/...` at the root of the domain, so on `raselrana.com.bd` the data is recorded by the **main site's** Vercel project, with `/blog/...` paths; only visits to the blog's own `vercel.app` address land in the blog project. Each must be enabled in the Vercel dashboard of the project that should record it.
+
 ## Not built / leftovers
 
 - `docs/BLOG_ADMIN_SPEC.md` section 12 lists what is built.
@@ -162,6 +166,8 @@ Login rate limiting (`src/lib/login-rate-limit.js`): every attempt is stored as 
 `.env.local`: `DATABASE_URL`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `CLOUDINARY_UPLOAD_FOLDER` (optional, defaults to `raselrana-blog`), `NEXT_PUBLIC_BASE_PATH` (`/blog`), `AUTH_SECRET`, `AUTH_URL`, `BLOG_INDEXABLE`, plus `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` / `ADMIN_USERNAME` for the admin script only. `.env.example` lists them all.
 
 `BLOG_INDEXABLE=true` lets search engines index the public pages; anything else keeps the whole site `noindex`. It is off until launch.
+
+`BLOG_LAUNCHED`: until it is `true`, the production deployment (`VERCEL_ENV=production`) answers every public address with the "coming soon" page (`src/lib/coming-soon.js`, the rewrite in `src/proxy.js`, page in `src/app/coming-soon/`) and `GET /api/posts` returns no posts. `/admin` (with the sign-in page) and `/preview/...` stay open, and the sitemap is empty. Local runs and preview deployments are not affected; to see the page locally, start the server with `VERCEL_ENV=production`.
 
 These belong to the blog's own Vercel project, not the main site's.
 
