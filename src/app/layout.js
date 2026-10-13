@@ -1,5 +1,6 @@
 import { SITE_URL } from "@/lib/posts";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "next-themes";
 import { plexMono, plexSans, spaceGrotesk } from "./fonts";
 import "./globals.css";
@@ -41,6 +42,7 @@ export default function RootLayout({ children }) {
           {children}
         </ThemeProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
