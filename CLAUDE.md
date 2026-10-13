@@ -148,6 +148,10 @@ Login rate limiting (`src/lib/login-rate-limit.js`): every attempt is stored as 
 - `POST /api/posts`, `PATCH /api/posts/[id]` — any signed-in user who may edit the post; setting a status other than `DRAFT` needs `ADMIN`. The editor always sends the full post, including `status`.
 - `DELETE /api/posts/[id]` — `ADMIN`, and only for a draft that was never published (409 otherwise; archive instead).
 
+### Vercel analytics
+
+`src/app/layout.js` renders `<Analytics />` (visitors) and `<SpeedInsights />` (page speed). Their scripts load from `/_vercel/...` at the root of the domain, so on `raselrana.com.bd` the data is recorded by the **main site's** Vercel project, with `/blog/...` paths; only visits to the blog's own `vercel.app` address land in the blog project. Each must be enabled in the Vercel dashboard of the project that should record it.
+
 ## Not built / leftovers
 
 - `docs/BLOG_ADMIN_SPEC.md` section 12 lists what is built.

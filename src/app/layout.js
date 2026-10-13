@@ -1,5 +1,6 @@
 import { SITE_URL } from "@/lib/posts";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "next-themes";
 import { plexMono, plexSans, spaceGrotesk } from "./fonts";
 import "./globals.css";
@@ -40,7 +41,9 @@ export default function RootLayout({ children }) {
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
         </ThemeProvider>
+        {/* Vercel: visitor counts and real-visitor page speed. Both do nothing locally. */}
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
