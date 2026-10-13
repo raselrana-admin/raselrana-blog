@@ -1,4 +1,5 @@
 import { canSetStatus } from "@/lib/authz";
+import { COMING_SOON } from "@/lib/coming-soon";
 import { requireApiUser } from "@/lib/require-admin";
 import { createPost, PostError } from "@/services/posts/actions";
 import { getPostsForMainSite } from "@/services/posts/queries";
@@ -29,7 +30,8 @@ export async function GET(request) {
       : DEFAULT_LIMIT;
 
   try {
-    const posts = await getPostsForMainSite(limit);
+    // Nothing to link to while the blog shows the "coming soon" page.
+    const posts = COMING_SOON ? [] : await getPostsForMainSite(limit);
 
     return NextResponse.json(
       { posts },
