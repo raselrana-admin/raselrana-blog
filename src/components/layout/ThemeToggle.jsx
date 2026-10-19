@@ -1,48 +1,26 @@
 "use client";
 
 import { useTheme } from "next-themes";
+import { MoonIcon, SunIcon } from "@/components/layout/header-icons";
+import { useIsMounted } from "@/lib/use-is-mounted";
 
+// Brand theme button (.hc-btn .hc-theme in globals.css): a sun in light mode,
+// a moon in dark mode. The icon waits for the client so the server HTML and
+// the first render agree (the theme is only known in the browser).
+// In the header bar pass className="hc-btn-sm" for the 32px size.
 export default function ThemeToggle({ className = "" }) {
   const { resolvedTheme, setTheme } = useTheme();
+  const mounted = useIsMounted();
+  const isDark = mounted && resolvedTheme === "dark";
 
   return (
     <button
       type="button"
-      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-      aria-label="Switch between light and dark mode"
-      title="Switch theme"
-      className={`inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--line)] text-[var(--ink)] transition-colors hover:border-[var(--signal)] hover:text-[var(--signal)] ${className}`}
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      aria-label={!mounted ? "Switch theme" : isDark ? "Switch to light mode" : "Switch to dark mode"}
+      className={`hc-btn hc-theme ${className}`}
     >
-      {/* Both icons are in the HTML; CSS shows the right one for the current theme. */}
-      <svg
-        className="theme-icon-light"
-        viewBox="0 0 24 24"
-        width="18"
-        height="18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
-      </svg>
-      <svg
-        className="theme-icon-dark"
-        viewBox="0 0 24 24"
-        width="18"
-        height="18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        <circle cx="12" cy="12" r="4" />
-        <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
-      </svg>
+      {mounted ? isDark ? <MoonIcon /> : <SunIcon /> : <span className="h-[22px] w-[22px]" />}
     </button>
   );
 }

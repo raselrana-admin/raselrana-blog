@@ -1,15 +1,13 @@
-import { IBM_Plex_Mono, IBM_Plex_Sans, Space_Grotesk } from "next/font/google";
+// Raw font variables. globals.css maps them to the --font-display /
+// --font-body / --font-mono theme tokens that components use.
+// Poppins is the brand typeface (headings and text); Plex Mono is kept for
+// small labels, dates and tags.
+import { IBM_Plex_Mono, Poppins } from "next/font/google";
 
-export const spaceGrotesk = Space_Grotesk({
+export const poppins = Poppins({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-space-grotesk",
-});
-
-export const plexSans = IBM_Plex_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-plex-sans",
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-poppins",
 });
 
 export const plexMono = IBM_Plex_Mono({

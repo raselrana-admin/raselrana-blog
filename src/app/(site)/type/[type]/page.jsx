@@ -48,6 +48,7 @@ export default async function TypePage({ params, searchParams }) {
       <section className="border-t border-[var(--line)]">
         <div className={`${container} py-16 md:py-20`}>
           <PostListing
+            cardHeading="h2"
             posts={posts}
             page={page}
             totalPages={totalPages}

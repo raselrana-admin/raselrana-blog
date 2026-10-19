@@ -2,7 +2,7 @@ import { SITE_URL } from "@/lib/posts";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "next-themes";
-import { plexMono, plexSans, spaceGrotesk } from "./fonts";
+import { plexMono, poppins } from "./fonts";
 import "./globals.css";
 
 const description =
@@ -34,7 +34,7 @@ export default function RootLayout({ children }) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${spaceGrotesk.variable} ${plexSans.variable} ${plexMono.variable}`}
+      className={`${poppins.variable} ${plexMono.variable}`}
     >
       <body className="bg-[var(--paper)] font-body text-[var(--ink)]">
         {/* Same settings and storage key as the main site, so the chosen theme carries over. */}

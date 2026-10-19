@@ -27,7 +27,7 @@ export default async function AdminPanelLayout({ children }) {
               <span>Blog admin</span>
             </Link>
             <div className="lg:hidden">
-              <ThemeToggle />
+              <ThemeToggle className="hc-btn-sm" />
             </div>
           </div>
 
@@ -42,7 +42,7 @@ export default async function AdminPanelLayout({ children }) {
             </p>
             <div className="flex items-center gap-3">
               <SignOutButton />
-              <ThemeToggle />
+              <ThemeToggle className="hc-btn-sm" />
             </div>
           </div>
         </div>

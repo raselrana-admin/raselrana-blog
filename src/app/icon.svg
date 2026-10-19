@@ -1,8 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <rect width="32" height="32" rx="8" fill="#0f2438" />
-  <g fill="none" stroke="#f5f6f4" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M11 24V8h6.25a4.5 4.5 0 0 1 0 9H11" />
-    <path d="M16 17l3.9 5" />
-  </g>
-  <circle cx="21.6" cy="24" r="2.3" fill="#f5f6f4" />
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="Rasel Rana logo mark, small sizes"><title>Rasel Rana logo mark, small sizes</title><rect width="100" height="100" rx="24" fill="#1D6FE0"/><g transform="translate(50 50) scale(0.94) translate(-52.5 -42.5)" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M28 76V26h18a13 13 0 0 1 0 26H28" stroke="#FFFFFF" stroke-width="12"/><path d="M44 52l16 24" stroke="#FFFFFF" stroke-width="12"/><path d="M62 8a16 16 0 0 1 16 16" stroke="#FCD34D" stroke-width="10"/></g></svg>

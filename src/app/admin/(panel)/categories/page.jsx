@@ -23,7 +23,7 @@ function CategoryForm({ action, category, submitLabel }) {
     <form action={action} className="grid gap-4 md:grid-cols-2">
       <div>
         <label htmlFor="category-name" className={fieldLabel}>
-          Name
+          Name (required)
         </label>
         <input
           id="category-name"

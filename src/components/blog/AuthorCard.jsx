@@ -45,7 +45,7 @@ export default function AuthorCard({ author = null }) {
               name
             )}
           </p>
-          <p className="mt-1 font-mono text-xs uppercase tracking-[0.15em] text-[var(--signal)]">
+          <p className="mt-1 font-mono text-xs uppercase tracking-[0.15em] text-[var(--slate)]">
             Manager (Technical), BTCL
           </p>
           <p className="mt-3 max-w-xl whitespace-pre-line text-sm leading-relaxed text-[var(--slate)]">

@@ -561,7 +561,7 @@ export default function PostEditor({
       >
         <div className="md:col-span-2">
           <label htmlFor="post-title" className={fieldLabel}>
-            Title
+            Title (required)
           </label>
           <input
             id="post-title"
@@ -576,7 +576,7 @@ export default function PostEditor({
 
         <div>
           <label htmlFor="post-slug" className={fieldLabel}>
-            Slug (address)
+            Slug (address, required)
           </label>
           <input
             id="post-slug"
@@ -607,7 +607,7 @@ export default function PostEditor({
           <label htmlFor="post-tags" className={fieldLabel}>
             Topics ({tags.length}/{MAX_TAGS})
           </label>
-          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-[var(--line)] bg-[var(--paper)] px-3 py-2 transition-colors focus-within:border-[var(--signal)]">
+          <div className="flex flex-wrap items-center gap-2 rounded-md border border-[var(--field)] bg-[var(--paper)] px-3 py-2 transition-colors focus-within:border-[var(--signal)]">
             {tags.map((tag) => (
               <span
                 key={tag}

@@ -101,7 +101,7 @@ export default async function TagsPage({ searchParams }) {
           >
             <div>
               <label htmlFor="tag-name" className={fieldLabel}>
-                Name
+                Name (required)
               </label>
               <input
                 id="tag-name"
@@ -235,7 +235,7 @@ export default async function TagsPage({ searchParams }) {
           >
             <div>
               <label htmlFor="merge-source" className={fieldLabel}>
-                Merge this topic (it is removed)
+                Merge this topic (it is removed) (required)
               </label>
               <select id="merge-source" name="merge" required defaultValue="" className={input}>
                 <option value="" disabled>
@@ -250,7 +250,7 @@ export default async function TagsPage({ searchParams }) {
             </div>
             <div>
               <label htmlFor="merge-target" className={fieldLabel}>
-                Into this topic (it is kept)
+                Into this topic (it is kept) (required)
               </label>
               <select id="merge-target" name="into" required defaultValue="" className={input}>
                 <option value="" disabled>

@@ -4,7 +4,7 @@ import PostCard from "@/components/blog/PostCard";
 import PostNav from "@/components/blog/PostNav";
 import { cloudinaryUrl } from "@/lib/cloudinary-loader";
 import { postDate, postPath, postUrl, SITE_URL } from "@/lib/posts";
-import { container, sectionHeading } from "@/lib/ui";
+import { cardGrid, container, sectionHeading } from "@/lib/ui";
 import {
   coverOf,
   getAdjacentPosts,
@@ -129,7 +129,7 @@ export default async function PostPage({ params }) {
           {related.length > 0 && (
             <div>
               <h2 className={sectionHeading}>Related posts</h2>
-              <div className="mt-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+              <div className={`mt-8 ${cardGrid(related.length)}`}>
                 {related.map((item) => (
                   <PostCard key={item.slug} post={item} />
                 ))}

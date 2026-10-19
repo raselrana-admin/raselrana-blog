@@ -2,7 +2,7 @@ import Pagination from "@/components/blog/Pagination";
 import PostCard, { FeatureCard } from "@/components/blog/PostCard";
 import SearchForm from "@/components/blog/SearchForm";
 import TagChip from "@/components/blog/TagChip";
-import { container, pageHeading, pageLabel, sectionHeading } from "@/lib/ui";
+import { cardGrid, container, pageHeading, pageLabel, sectionHeading } from "@/lib/ui";
 import { getPublishedPosts, getTagCounts } from "@/services/posts/queries";
 import Link from "next/link";
 
@@ -103,7 +103,7 @@ export default async function BlogHome({ searchParams }) {
               {feature && <FeatureCard post={feature} />}
               {rest.length > 0 && (
                 <div
-                  className={`grid gap-6 sm:grid-cols-2 lg:grid-cols-3 ${
+                  className={`${cardGrid(rest.length)} ${
                     feature ? "mt-6" : ""
                   }`}
                 >
