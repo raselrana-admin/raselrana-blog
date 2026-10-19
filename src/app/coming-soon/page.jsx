@@ -24,10 +24,10 @@ export default function ComingSoonPage() {
           <span aria-hidden className="h-px w-10 bg-[var(--signal)]" />
           Blog
           <span aria-hidden>·</span>
-          <span className="flex items-center gap-2 text-[var(--signal)]">
+          <span className="flex items-center gap-2">
             <span
               aria-hidden
-              className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--pulse)]"
+              className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--signal)]"
             />
             In preparation
           </span>

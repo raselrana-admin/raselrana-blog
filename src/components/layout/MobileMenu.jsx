@@ -1,62 +1,117 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
+import BrandLogo from "@/components/brand/BrandLogo";
+import MainSiteLink from "@/components/layout/MainSiteLink";
+import ThemeToggle from "@/components/layout/ThemeToggle";
+import { useDialogFocus } from "@/lib/use-dialog-focus";
+import { useIsMounted } from "@/lib/use-is-mounted";
+import { ArrowIcon, ChevronIcon, CloseIcon, SignalArcs } from "./header-icons";
+
+const CONTACT_EMAIL = "contact@raselrana.com.bd";
 
 /**
- * Phone menu. A <details> element, so it opens without JavaScript;
- * the script part only closes it again after a link is followed.
+ * The full-screen phone menu (styles: .hc-* in globals.css). Rendered into
+ * <body>: the sticky header has a backdrop blur, which would otherwise make
+ * this fixed panel position itself against the header instead of the screen.
+ * useDialogFocus moves focus in, keeps Tab inside, closes on Escape and
+ * returns focus to the menu button; the header also closes it on a route change.
+ * `links` are the blog's own links: [{ label, href }].
  */
-export default function MobileMenu({ links }) {
-  const ref = useRef(null);
-  const pathname = usePathname();
+export default function MobileMenu({ links, pathname, onClose }) {
+  const mounted = useIsMounted();
+  const panelRef = useRef(null);
+  const { resolvedTheme, setTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+  useDialogFocus(panelRef, onClose, mounted);
 
+  // The page behind does not scroll while the menu is open
   useEffect(() => {
-    if (ref.current) ref.current.open = false;
-  }, [pathname]);
+    const original = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, []);
 
-  return (
-    <details ref={ref} className="group md:hidden">
-      <summary
-        aria-label="Menu"
-        className="inline-flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-full border border-[var(--line)] text-[var(--ink)] transition-colors hover:border-[var(--signal)] hover:text-[var(--signal)] [&::-webkit-details-marker]:hidden"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          width="18"
-          height="18"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          aria-hidden
-        >
-          <path className="group-open:hidden" d="M4 7h16M4 12h16M4 17h16" />
-          <path className="hidden group-open:block" d="M6 6l12 12M18 6L6 18" />
-        </svg>
-      </summary>
+  if (!mounted) return null;
 
-      <nav
-        aria-label="Blog"
-        className="absolute inset-x-0 top-16 border-b border-[var(--line)] bg-[var(--paper)]"
-      >
-        <ul className="mx-auto max-w-6xl px-6 py-3">
-          {links.map((link) => (
-            <li key={link.href}>
-              <Link
-                href={link.href}
-                onClick={() => {
-                  if (ref.current) ref.current.open = false;
-                }}
-                className="block py-3 text-base font-medium text-[var(--ink)] transition-colors hover:text-[var(--signal)]"
-              >
-                {link.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
+  return createPortal(
+    <div
+      id="mobile-menu"
+      ref={panelRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Site menu"
+      className="hc-panel md:hidden" /* use the same breakpoint as the header */
+    >
+      {/* Same row as the header (logo, 32px buttons, height, padding), so
+          opening the menu does not move or resize anything at the top */}
+      <div className="hc-panel-head">
+        <MainSiteLink href="/" aria-label="Rasel Rana — main site" className="flex shrink-0 items-center">
+          <BrandLogo height={32} />
+        </MainSiteLink>
+        <div className="flex shrink-0 items-center gap-2.5">
+          <ThemeToggle className="hc-btn-sm" />
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close menu"
+            aria-expanded="true"
+            aria-controls="mobile-menu"
+            className="hc-btn hc-btn-sm hc-menu"
+          >
+            <CloseIcon />
+          </button>
+        </div>
+      </div>
+
+      <nav aria-label="Blog" className="hc-nav">
+        <div className="flex items-center justify-between px-3.5 pb-2.5">
+          <span className="hc-eyebrow">Menu</span>
+          <SignalArcs />
+        </div>
+        {links.map((link, i) => {
+          const active = pathname === link.href;
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={onClose}
+              aria-current={active ? "page" : undefined}
+              className="hc-link"
+            >
+              <span className="hc-num" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+              <span className="flex-1">{link.label}</span>
+              <ChevronIcon />
+            </Link>
+          );
+        })}
       </nav>
-    </details>
+
+      <div className="hc-foot">
+        <div className="flex items-center justify-between gap-4">
+          <span className="hc-eyebrow">Appearance</span>
+          <div className="hc-seg" role="group" aria-label="Theme">
+            <button type="button" aria-pressed={!isDark} onClick={() => setTheme("light")}>
+              Light
+            </button>
+            <button type="button" aria-pressed={isDark} onClick={() => setTheme("dark")}>
+              Dark
+            </button>
+          </div>
+        </div>
+        {/* The main site's contact page (another app, so a plain <a>) */}
+        <MainSiteLink className="hc-cta" href="/contact">
+          Get in touch
+          <ArrowIcon />
+        </MainSiteLink>
+        <p className="hc-email">{CONTACT_EMAIL}</p>
+      </div>
+    </div>,
+    document.body,
   );
 }

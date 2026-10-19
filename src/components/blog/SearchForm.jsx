@@ -22,7 +22,7 @@ export default function SearchForm({ defaultValue = "" }) {
         defaultValue={defaultValue}
         placeholder="Search posts"
         maxLength={80}
-        className={`${input} bg-[var(--surface)]`}
+        className={input}
       />
       <button type="submit" className={`${buttonPrimary} px-5 py-2.5`}>
         Search

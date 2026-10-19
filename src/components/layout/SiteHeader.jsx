@@ -1,8 +1,7 @@
-import BrandMark from "@/components/brand/BrandMark";
+import BrandLogo from "@/components/brand/BrandLogo";
 import Link from "next/link";
+import HeaderControls from "./HeaderControls";
 import MainSiteLink from "./MainSiteLink";
-import MobileMenu from "./MobileMenu";
-import ThemeToggle from "./ThemeToggle";
 
 const links = [
   { href: "/", label: "Posts" },
@@ -12,17 +11,22 @@ const links = [
 
 export default function SiteHeader() {
   return (
-    // Same height and look as the main site's bar, so it does not jump between the two.
+    // Same height and look as the main site's bar (docs/brand-guide.md §6), so it does not jump between the two.
     <header className="sticky top-0 z-50 h-16 border-b border-[var(--line)] bg-[var(--paper)]/90 backdrop-blur-sm">
-      <div className="mx-auto flex h-full max-w-6xl items-center justify-between gap-4 px-6">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-[60] focus:rounded-full focus:bg-[var(--signal)] focus:px-5 focus:py-2.5 focus:text-sm focus:font-medium focus:text-[var(--paper)]"
+      >
+        Skip to content
+      </a>
+      <div className="mx-auto flex h-full max-w-6xl items-center justify-between gap-3 px-6">
         <div className="flex min-w-0 items-center gap-3">
           <MainSiteLink
             href="/"
-            title="Back to raselrana.com.bd"
-            className="flex shrink-0 items-center gap-2.5 font-display text-base font-semibold tracking-tight text-[var(--ink)]"
+            aria-label="Rasel Rana — main site"
+            className="flex shrink-0 items-center"
           >
-            <BrandMark />
-            <span>Rasel Rana</span>
+            <BrandLogo height={32} />
           </MainSiteLink>
           <span aria-hidden className="h-5 w-px bg-[var(--line)]" />
           <Link
@@ -33,24 +37,7 @@ export default function SiteHeader() {
           </Link>
         </div>
 
-        <div className="flex items-center gap-2 md:gap-7">
-          <nav aria-label="Blog" className="hidden md:block">
-            <ul className="flex items-center gap-7">
-              {links.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-sm font-medium text-[var(--slate)] transition-colors hover:text-[var(--ink)]"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-          <ThemeToggle />
-          <MobileMenu links={links} />
-        </div>
+        <HeaderControls links={links} />
       </div>
     </header>
   );

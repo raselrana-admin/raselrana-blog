@@ -49,7 +49,7 @@ export default async function ProfilePage({ searchParams }) {
           </div>
           <div>
             <label htmlFor="profile-name" className={fieldLabel}>
-              Name
+              Name (required)
             </label>
             <input
               id="profile-name"
@@ -62,7 +62,7 @@ export default async function ProfilePage({ searchParams }) {
           </div>
           <div>
             <label htmlFor="profile-username" className={fieldLabel}>
-              Username
+              Username (required)
             </label>
             <input
               id="profile-username"
@@ -137,7 +137,7 @@ export default async function ProfilePage({ searchParams }) {
         <form action={changePasswordAction} className="grid max-w-xl gap-5">
           <div>
             <label htmlFor="password-current" className={fieldLabel}>
-              Current password
+              Current password (required)
             </label>
             <input
               id="password-current"
@@ -150,7 +150,7 @@ export default async function ProfilePage({ searchParams }) {
           </div>
           <div>
             <label htmlFor="password-next" className={fieldLabel}>
-              New password
+              New password (required)
             </label>
             <input
               id="password-next"
@@ -164,7 +164,7 @@ export default async function ProfilePage({ searchParams }) {
           </div>
           <div>
             <label htmlFor="password-confirm" className={fieldLabel}>
-              New password again
+              New password again (required)
             </label>
             <input
               id="password-confirm"

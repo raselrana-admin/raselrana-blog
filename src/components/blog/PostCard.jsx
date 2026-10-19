@@ -7,6 +7,7 @@ import TagChip from "./TagChip";
 function Meta({ post }) {
   return (
     <p className={metaLine}>
+      {post.category && <>{post.category.name} · </>}
       <time dateTime={new Date(post.publishedAt).toISOString()}>
         {formatDate(post.publishedAt)}
       </time>
@@ -27,8 +28,11 @@ function Tags({ tags }) {
   );
 }
 
-/** The whole card is one link. */
-export default function PostCard({ post }) {
+/**
+ * The whole card is one link. `heading` is the title element: h3 under a section
+ * heading, h2 on listing pages where the page h1 is the only heading above it.
+ */
+export default function PostCard({ post, heading: Heading = "h3" }) {
   return (
     <Link
       href={postPath(post.slug)}
@@ -47,9 +51,9 @@ export default function PostCard({ post }) {
       )}
       <div className="flex flex-1 flex-col gap-4 p-7">
         <Tags tags={post.tags} />
-        <h3 className="font-display text-xl font-medium text-[var(--ink)] transition-colors group-hover:text-[var(--signal)]">
+        <Heading className="font-display text-xl font-medium text-[var(--ink)] transition-colors group-hover:text-[var(--signal)]">
           {post.title}
-        </h3>
+        </Heading>
         {post.excerpt && (
           <p className="line-clamp-3 text-sm leading-relaxed text-[var(--slate)]">
             {post.excerpt}
@@ -87,7 +91,7 @@ export function FeatureCard({ post }) {
           post.coverUrl ? "" : "md:col-span-2"
         }`}
       >
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--signal)]">
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--slate)]">
           Latest post
         </p>
         <h2 className="font-display text-3xl font-semibold tracking-tight text-[var(--ink)] transition-colors group-hover:text-[var(--signal)] md:text-4xl">

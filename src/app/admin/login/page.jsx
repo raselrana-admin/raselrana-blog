@@ -54,7 +54,7 @@ export default function LoginPage() {
             <p className="font-display text-lg font-semibold text-[var(--ink)]">
               Rasel Rana
             </p>
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--signal)]">
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--slate)]">
               Blog admin
             </p>
           </div>
@@ -69,7 +69,7 @@ export default function LoginPage() {
           </h1>
           <div>
             <label htmlFor="login-email" className={fieldLabel}>
-              Email
+              Email (required)
             </label>
             <input
               id="login-email"
@@ -83,7 +83,7 @@ export default function LoginPage() {
           </div>
           <div>
             <label htmlFor="login-password" className={fieldLabel}>
-              Password
+              Password (required)
             </label>
             <input
               id="login-password"

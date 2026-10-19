@@ -1,4 +1,4 @@
-import BrandMark from "@/components/brand/BrandMark";
+import BrandLogo from "@/components/brand/BrandLogo";
 import Link from "next/link";
 import MainSiteLink from "./MainSiteLink";
 
@@ -22,16 +22,16 @@ const link =
 
 export default function SiteFooter() {
   return (
-    <footer className="border-t border-[var(--line)] bg-[var(--surface)]">
+    <footer id="site-footer" className="border-t border-[var(--line)] bg-[var(--surface)]">
       <div className="mx-auto max-w-6xl px-6 py-14">
         <div className="grid gap-10 md:grid-cols-[1.6fr_1fr_1fr]">
           <div>
             <MainSiteLink
               href="/"
-              className="inline-flex items-center gap-2.5 font-display text-base font-semibold tracking-tight text-[var(--ink)]"
+              aria-label="Rasel Rana — main site"
+              className="inline-flex"
             >
-              <BrandMark />
-              <span>Rasel Rana</span>
+              <BrandLogo height={56} tagline />
             </MainSiteLink>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-[var(--slate)]">
               Manager (Technical), BTCL — writing and building at the
@@ -66,9 +66,13 @@ export default function SiteFooter() {
           </nav>
         </div>
 
-        <p className="mt-12 border-t border-[var(--line)] pt-6 font-mono text-xs text-[var(--slate)]">
-          © {new Date().getFullYear()} Rasel Rana. All rights reserved.
-        </p>
+        <div className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-[var(--line)] pt-6 font-mono text-xs text-[var(--slate)]">
+          <p>© {new Date().getFullYear()} Rasel Rana</p>
+          {/* No element has id="top", so the browser scrolls to the start of the page */}
+          <a href="#top" className="transition-colors hover:text-[var(--signal)]">
+            Back to top ↑
+          </a>
+        </div>
       </div>
     </footer>
   );

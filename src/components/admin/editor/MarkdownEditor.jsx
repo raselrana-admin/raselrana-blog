@@ -14,7 +14,7 @@ const tokenTheme = EditorView.theme({
   "&": {
     backgroundColor: "var(--surface)",
     color: "var(--ink)",
-    border: "1px solid var(--line)",
+    border: "1px solid var(--field)",
     borderRadius: "0.5rem",
     fontSize: "0.875rem",
   },

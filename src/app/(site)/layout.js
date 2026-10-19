@@ -7,7 +7,9 @@ export default function SiteLayout({ children }) {
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <CategoryBar />
-      <main className="flex-1">{children}</main>
+      <main id="main" tabIndex={-1} className="flex-1 outline-none">
+        {children}
+      </main>
       <SiteFooter />
     </div>
   );

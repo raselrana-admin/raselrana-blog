@@ -33,7 +33,7 @@ export default function ShareRow({ url }) {
         rel="noopener noreferrer"
         className={buttonSmall}
       >
-        LinkedIn
+        LinkedIn ↗<span className="sr-only"> (opens in a new tab)</span>
       </a>
       <a
         href={`https://www.facebook.com/sharer/sharer.php?u=${encoded}`}
@@ -41,7 +41,7 @@ export default function ShareRow({ url }) {
         rel="noopener noreferrer"
         className={buttonSmall}
       >
-        Facebook
+        Facebook ↗<span className="sr-only"> (opens in a new tab)</span>
       </a>
     </div>
   );

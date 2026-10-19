@@ -20,185 +20,19 @@ Today the blog's public side is a "coming soon" page and stubs. Its login, post 
 | Not wanted now | RSS feed, comments, newsletter, visual (Word-style) editor. |
 | Main site home page | Shows the three newest posts, fetched from the blog through the API in section 8. **The main site side is already built and waiting for that API.** |
 
-## 3. Design tokens — copy exactly
+## 3. Design tokens, fonts and logo
 
-The main site uses Tailwind CSS v4 with CSS variables. Use the same variables with the same names and values, so both sites can never drift apart by accident.
-
-### Colours, fonts and base rules (`src/app/globals.css`)
-
-```css
-@import "tailwindcss";
-@custom-variant dark (&:where(.dark, .dark *));
-
-@theme static {
-  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
-  --font-body: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
-}
-
-:root {
-  --ink: #0f2438;     /* primary text, solid buttons, logo badge */
-  --slate: #5b6b7a;   /* secondary text, small labels */
-  --paper: #f5f6f4;   /* page background */
-  --surface: #ffffff; /* cards and panels */
-  --signal: #0e7c86;  /* accent: links, active states */
-  --pulse: #3fa796;   /* second accent, rare */
-  --line: #d8dde1;    /* hairline borders */
-  --danger: #b42318;  /* errors */
-}
-
-.dark {
-  --ink: #eef1f0;
-  --slate: #93a1ab;
-  --paper: #0b1420;
-  --surface: #111d2c;
-  --signal: #2dd4c7;
-  --pulse: #52c9a6;
-  --line: #223244;
-  --danger: #f97066;
-}
-
-html { scroll-behavior: smooth; }
-
-body {
-  background-color: var(--paper);
-  color: var(--ink);
-  transition: background-color 0.25s ease, color 0.25s ease;
-}
-
-h1, h2, h3 { text-wrap: balance; }
-p { text-wrap: pretty; }
-
-:focus-visible {
-  outline: 2px solid var(--signal);
-  outline-offset: 3px;
-  border-radius: 2px;
-}
-
-::selection { background: var(--signal); color: var(--paper); }
-
-/* Entrance motion: CSS only, so content never waits for JavaScript. */
-@keyframes rise {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: none; }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .rise {
-    animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-    animation-delay: var(--delay, 0ms);
-  }
-  @supports (animation-timeline: view()) {
-    .reveal {
-      animation: rise linear both;
-      animation-timeline: view();
-      animation-range: entry 0% cover 22%;
-    }
-  }
-  /* Smooth fade when moving between the main site and the blog.
-     The main site has the same rule; both pages must opt in. */
-  @view-transition { navigation: auto; }
-}
-```
-
-Use the variables as Tailwind arbitrary values: `text-[var(--ink)]`, `border-[var(--line)]`, `bg-[var(--surface)]`. **Do not** use Tailwind palette colours (`slate-950`, `gray-500`, `bg-white`) or `dark:` variants in public pages; the current placeholder pages do, and they must be replaced.
-
-### Fonts (`src/app/fonts.js`, applied on `<html>`)
-
-```js
-import { IBM_Plex_Mono, IBM_Plex_Sans, Space_Grotesk } from "next/font/google";
-
-export const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-space-grotesk" });
-export const plexSans = IBM_Plex_Sans({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-plex-sans" });
-export const plexMono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-plex-mono" });
-```
-
-```jsx
-<html lang="en" suppressHydrationWarning className={`${spaceGrotesk.variable} ${plexSans.variable} ${plexMono.variable}`}>
-  <body className="bg-[var(--paper)] font-body text-[var(--ink)]">
-```
-
-| Utility | Font | Use |
-| --- | --- | --- |
-| `font-display` | Space Grotesk | Headings, post titles |
-| `font-body` (default) | IBM Plex Sans | Paragraphs, article text |
-| `font-mono` | IBM Plex Mono | Small labels, dates, tags, code |
-
-### Logo (`BrandMark`) — copy as is
-
-```jsx
-export default function BrandMark({ className = "", size = 30 }) {
-  return (
-    <svg viewBox="0 0 32 32" width={size} height={size} className={className} role="img" aria-label="Rasel Rana">
-      <rect width="32" height="32" rx="8" fill="var(--ink)" />
-      <g fill="none" stroke="var(--paper)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M11 24V8h6.25a4.5 4.5 0 0 1 0 9H11" />
-        <path d="M16 17l3.9 5" />
-      </g>
-      <circle cx="21.6" cy="24" r="2.3" fill="var(--paper)" />
-    </svg>
-  );
-}
-```
-
-For the browser tab icon, use the same shape with fixed colours: badge `#0f2438`, letter and dot `#f5f6f4`.
-
-### Light and dark mode — must carry over
-
-The main site uses `next-themes` with `attribute="class"`, `defaultTheme="system"`, `enableSystem`, and the default storage key (`theme`). Use **the same library and the same settings**. Because the blog is served from the same address (raselrana.com.bd), the browser shares that saved choice: a visitor who picked dark mode on the main site arrives on the blog in dark mode. A different storage key or a custom toggle would break this.
+**Superseded by `docs/brand-guide.md`.** That guide holds the current brand: logo files and where they go, colour tokens, fonts (Poppins + IBM Plex Mono), the header controls, components and the accessibility rules, all copied from the live main site. The values that used to be here (teal accent, Space Grotesk, the old badge logo) are out of date.
 
 ## 4. Layout rules and ready-made styles
 
-- **One container everywhere:** `mx-auto max-w-6xl px-6`. The menu, content and footer share it, so every left edge lines up, and it matches the main site.
-- **Section rhythm:** `py-16 md:py-20` or `py-20 md:py-24`; each section after the first starts with `border-t border-[var(--line)]`.
-- **Sticky top bar:** `sticky top-0 z-50 h-16 border-b border-[var(--line)] bg-[var(--paper)]/90 backdrop-blur-sm` — the same height and look as the main site's, so the bar does not jump when moving between the two.
-- **Mobile first.** Check phone width (around 400px), light and dark.
-
-```jsx
-{/* Small label above a heading */}
-<p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--signal)]">Label</p>
-
-{/* Page header label with a short accent line (top of a page) */}
-<p className="flex items-center gap-3 font-mono text-xs uppercase tracking-[0.2em] text-[var(--slate)]">
-  <span aria-hidden className="h-px w-10 bg-[var(--signal)]" />Blog
-</p>
-
-{/* Page heading */}
-<h1 className="font-display text-4xl font-semibold leading-[1.05] tracking-tight text-[var(--ink)] md:text-6xl">…</h1>
-
-{/* Section heading */}
-<h2 className="font-display text-3xl font-semibold tracking-tight text-[var(--ink)] md:text-4xl">…</h2>
-
-{/* Card */}
-<div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-7 transition-colors hover:border-[var(--signal)]">…</div>
-
-{/* Card heading / body text */}
-<h3 className="font-display text-xl font-medium text-[var(--ink)]">…</h3>
-<p className="text-sm leading-relaxed text-[var(--slate)]">…</p>
-
-{/* Tag / chip */}
-<span className="rounded-full border border-[var(--line)] px-3 py-1 font-mono text-xs text-[var(--slate)]">telecom</span>
-
-{/* Main button and second button (pills) */}
-className="rounded-full bg-[var(--ink)] px-6 py-3 text-sm font-medium text-[var(--paper)] transition-opacity hover:opacity-90"
-className="rounded-full border border-[var(--line)] px-6 py-3 text-sm font-medium text-[var(--ink)] transition-colors hover:border-[var(--signal)] hover:text-[var(--signal)]"
-
-{/* Form input */}
-className="w-full rounded-lg border border-[var(--line)] bg-[var(--paper)] px-3 py-2.5 text-sm text-[var(--ink)] placeholder:text-[var(--slate)] outline-none transition-colors focus:border-[var(--signal)]"
-```
-
-Three rules learned the hard way on the main site:
-
-1. **Never hide content until JavaScript runs.** No animation library with an "invisible at start" state for entrances; use the `rise` and `reveal` classes above. Pages must be readable in the HTML the server sends.
-2. **Dialogs and overlays go into `document.body` with `createPortal`.** An element with `rise`/`reveal` is transformed, and a `position: fixed` child of a transformed element is positioned against that element, not the screen.
-3. **Show Cloudinary images through Cloudinary's own resizing:** insert `f_auto,q_auto,c_limit,w_<width>` after `/image/upload/` in the address (a `next/image` custom loader does this neatly), so phones do not download full-size photos.
+Also in `docs/brand-guide.md` (sections 5, 8 and 9).
 
 ## 5. Structure of the blog
 
 ### Top bar (the blog's own menu)
 
-Left: the logo and "Rasel Rana" linking to the **main site home** (`/`), then a thin divider and the word **Blog** linking to the blog home. Right: **Posts**, **Topics**, **About the author**, the theme toggle. On phones these collapse into a menu button.
+Left: the logo (`BrandLogo`, which includes "Rasel Rana") linking to the **main site home** (`/`), then a thin divider and the word **Blog** linking to the blog home. Right: **Posts**, **Topics**, **About the author**, the theme toggle. On phones these collapse into a menu button. Use the main site's header controls so the two apps feel the same: copy `src/components/theme/ThemeToggle.jsx`, `src/components/layout/header-icons.jsx`, `src/lib/use-dialog-focus.js`, the `MobileMenu.jsx` pattern (with the blog's own links), and the "Header controls" block at the end of the main site's `globals.css`.
 
 One clearly visible way back is required: the logo/name is it. Do not copy the main site's full menu.
 
@@ -216,7 +50,7 @@ Logo, name and one line of description; a "Blog" column (Posts, Topics); a "Rase
 | Address (under `/blog`) | What it shows |
 | --- | --- |
 | `/` | Blog home: page header, search box, topic chips, the newest post as a large feature card with its cover, the rest as a card grid, pagination |
-| `/posts/[slug]` | One post (section 6) |
+| `/[slug]` | One post (section 6) |
 | `/tags` | All topics with the number of posts in each |
 | `/tags/[tag]` | Posts for one topic |
 | `/about` | Short "about the author" with links to the main site's About and Contact pages |
@@ -236,7 +70,7 @@ Cover image (16:9, rounded, optional), topic chips, title, excerpt (two or three
 - **Reading progress bar:** a thin `--signal` line at the very top of the window that fills as the reader scrolls the article.
 - **Table of contents:** built from the post's `##` and `###` headings; the heading currently on screen is highlighted; clicking scrolls to it. Hide it when a post has fewer than three headings.
 - **Reading time:** words ÷ 200, rounded up, minimum 1.
-- **Share row** at the end: Copy link (with a "Copied" confirmation), LinkedIn, Facebook. Use the public address, `https://raselrana.com.bd/blog/posts/<slug>`.
+- **Share row** at the end: Copy link (with a "Copied" confirmation), LinkedIn, Facebook. Use the public address, `https://raselrana.com.bd/blog/<slug>`.
 - **Previous / next** post links (older and newer).
 - **Related posts:** up to three that share a topic; if none, the newest others.
 - **Author card** at the bottom: logo, name, role, one or two lines, and two links to the main site: "More about me" (`/about`) and "Get in touch" (`/contact`). This is the natural route back to the main site.
@@ -285,9 +119,13 @@ In the blog project this is a public `GET` handler in `src/app/api/posts/route.j
     {
       "title": "Why backup power decides telecom uptime",
       "slug": "why-backup-power-decides-telecom-uptime",
+      "url": "/blog/why-backup-power-decides-telecom-uptime",
       "excerpt": "One or two sentences that summarise the post.",
       "coverUrl": "https://res.cloudinary.com/<cloud>/image/upload/v1/raselrana-blog/abc.jpg",
-      "tags": ["Telecom", "Power systems"],
+      "coverAlt": "Battery bank in a telecom shelter",
+      "tags": ["ONT", "dBm"],
+      "category": { "name": "GPON & Fiber Optics", "slug": "gpon-fiber-optics" },
+      "contentType": { "label": "Troubleshooting", "slug": "troubleshooting" },
       "publishedAt": "2026-10-08T09:30:00.000Z",
       "readingMinutes": 6
     }
@@ -295,23 +133,29 @@ In the blog project this is a public `GET` handler in `src/app/api/posts/route.j
 }
 ```
 
+This is the shape the blog now provides. The main site reads it in `src/lib/services/blog-posts.js`.
+
 | Field | Type | Rules |
 | --- | --- | --- |
 | `title` | text | Required |
-| `slug` | text | Required. Lower-case letters, numbers and single hyphens. The main site links to `/blog/posts/<slug>` |
-| `excerpt` | text | May be empty. If the post has none, send the first ~160 characters of the content with Markdown marks removed |
+| `slug` | text | Required. Lower-case letters, numbers and single hyphens |
+| `url` | text | Root-relative address of the post, e.g. `/blog/<slug>`. The main site links to it; if it is missing or not a `/blog/…` address, the main site uses `/blog/<slug>` |
+| `excerpt` | text | May be empty |
 | `coverUrl` | text or `null` | A `https://res.cloudinary.com/…/image/upload/…` address, or `null`. Anything else is ignored by the main site |
+| `coverAlt` | text | Description of the photo. May be empty |
 | `tags` | list of text | May be empty. The main site shows the first three |
-| `publishedAt` | ISO date-time | When the post was first published (fall back to its creation time) |
-| `readingMinutes` | whole number | Optional. Shown as "6 min read" when present |
+| `category` | object or `null` | `{ name, slug }`. The name is the small label on the card |
+| `contentType` | object or `null` | `{ label, slug }`. The label is used when there is no category |
+| `publishedAt` | ISO date-time | Shown as the day in Bangladesh time, e.g. `8 Oct 2026` |
+| `readingMinutes` | whole number | Shown as "6 min read" |
 
 ### Rules
 
-- **Published posts only**, newest first. Never drafts.
+- **Published posts only**, and only those the author left ticked "Show on main site"; newest first. Never drafts.
 - **Never include the post content**, ids or anything about the author account.
-- Send `Cache-Control: public, s-maxage=300, stale-while-revalidate=600`.
+- The blog keeps its answer for 5 minutes and the main site keeps its own copy for 10, so a new post appears on the main home page within about 15 minutes of publishing.
 - On an internal error answer with a `5xx` status; the main site then simply hides its section.
-- The main site keeps its own copy for up to 10 minutes, so a new post appears on the main home page within about 10 minutes of publishing.
+- More fields may be added later; the main site ignores the ones it does not know.
 
 ## 9. Out of scope
 

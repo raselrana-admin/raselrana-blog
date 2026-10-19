@@ -96,6 +96,7 @@ const components = {
                 loading="lazy"
                 decoding="async"
               />
+              <span className="sr-only"> (opens in a new tab)</span>
             </a>
           ))}
         </div>
@@ -132,6 +133,7 @@ const components = {
         {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
       >
         {children}
+        {external && <span className="sr-only"> (opens in a new tab)</span>}
       </a>
     );
   },

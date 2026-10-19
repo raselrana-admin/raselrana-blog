@@ -1,26 +1,44 @@
-// Shared with the main site (docs/design-brief.md) — keep identical.
+import { MARK, MARK_SMALL, BRAND_COLORS } from "@/lib/brand";
+
+/**
+ * BrandMark — the logo mark on its own: the blue tile with the "R" and its
+ * two signal arcs. Used in the admin (sidebar, login), the author card and
+ * the about/author pages; the header and footer use brand/BrandLogo, which
+ * adds the name. Fixed brand colours, so it reads the same in both themes.
+ * Below 24px it switches to the small-size mark (thicker strokes, one arc).
+ * Geometry lives in lib/brand.js.
+ */
 export default function BrandMark({ className = "", size = 30 }) {
   return (
     <svg
-      viewBox="0 0 32 32"
+      viewBox="0 0 100 100"
       width={size}
       height={size}
       className={className}
       role="img"
       aria-label="Rasel Rana"
     >
-      <rect width="32" height="32" rx="8" fill="var(--ink)" />
+      <MarkShapes small={size < 24} />
+    </svg>
+  );
+}
+
+// The tile and strokes in a 100 × 100 box; shared with brand/BrandLogo.
+export function MarkShapes({ small = false }) {
+  const mark = small ? MARK_SMALL : MARK;
+  return (
+    <>
+      <rect width={mark.size} height={mark.size} rx={mark.radius} fill={BRAND_COLORS.tile} />
       <g
+        transform={mark.transform}
         fill="none"
-        stroke="var(--paper)"
-        strokeWidth="2.6"
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <path d="M11 24V8h6.25a4.5 4.5 0 0 1 0 9H11" />
-        <path d="M16 17l3.9 5" />
+        {mark.strokes.map((stroke) => (
+          <path key={stroke.d} d={stroke.d} stroke={stroke.color} strokeWidth={stroke.width} />
+        ))}
       </g>
-      <circle cx="21.6" cy="24" r="2.3" fill="var(--paper)" />
-    </svg>
+    </>
   );
 }

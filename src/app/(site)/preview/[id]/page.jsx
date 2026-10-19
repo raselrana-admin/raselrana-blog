@@ -42,7 +42,7 @@ export default async function PreviewPage({ params }) {
           className={`${container} flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-3`}
         >
           <p className="text-sm text-[var(--ink)]">
-            <span className="mr-2 font-mono text-xs uppercase tracking-[0.2em] text-[var(--signal)]">
+            <span className="mr-2 font-mono text-xs uppercase tracking-[0.2em] text-[var(--slate)]">
               {post.status === "PUBLISHED"
                 ? "Preview"
                 : "Preview — not published"}
