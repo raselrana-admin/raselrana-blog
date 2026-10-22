@@ -21,7 +21,10 @@ export const metadata = {
     url: "/blog",
     siteName: "Rasel Rana",
     type: "website",
+    // Generated in the brand (src/app/api/og); pages with their own picture override it.
+    images: [{ url: "/blog/api/og", width: 1200, height: 630, alt: "Rasel Rana — Blog" }],
   },
+  twitter: { card: "summary_large_image" },
   // Hidden from search engines until BLOG_INDEXABLE=true is set at launch.
   robots:
     process.env.BLOG_INDEXABLE === "true"

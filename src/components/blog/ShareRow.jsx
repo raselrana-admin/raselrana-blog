@@ -3,7 +3,7 @@
 import { buttonSmall } from "@/lib/ui";
 import { useState } from "react";
 
-/** `url` is the public address of the post (https://raselrana.com.bd/blog/posts/<slug>). */
+/** `url` is the public address of the post (https://raselrana.com.bd/blog/<slug>). */
 export default function ShareRow({ url }) {
   const [copied, setCopied] = useState(false);
   const encoded = encodeURIComponent(url);
@@ -25,8 +25,12 @@ export default function ShareRow({ url }) {
         Share
       </p>
       <button type="button" onClick={copy} className={buttonSmall}>
-        <span aria-live="polite">{copied ? "Copied" : "Copy link"}</span>
+        {copied ? "Copied" : "Copy link"}
       </button>
+      {/* Outside the button: screen readers often skip changes inside the focused control */}
+      <span aria-live="polite" className="sr-only">
+        {copied ? "Link copied" : ""}
+      </span>
       <a
         href={`https://www.linkedin.com/sharing/share-offsite/?url=${encoded}`}
         target="_blank"

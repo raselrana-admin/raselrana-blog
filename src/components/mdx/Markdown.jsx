@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
+import CodeBlock from "./CodeBlock";
 import YouTubeEmbed from "./YouTubeEmbed";
 
 const IMAGE_WIDTHS = [480, 800, 1200, 1600];
@@ -50,6 +51,32 @@ function captionedImage(node) {
     return null;
   }
   return { src, alt, caption: title.trim() };
+}
+
+/** The plain text of a node, for naming the link next to a heading. */
+const textOf = (node) =>
+  node.type === "text" ? node.value : (node.children ?? []).map(textOf).join("");
+
+/**
+ * h2 and h3 with a "#" link to themselves, so a reader can share one section
+ * (one troubleshooting step). Ids come from rehype-slug.
+ */
+function linkedHeading(Tag) {
+  return function LinkedHeading({ node, id, children, ...props }) {
+    if (!id) return <Tag {...props}>{children}</Tag>;
+    return (
+      <Tag id={id} {...props}>
+        {children}
+        <a
+          href={`#${id}`}
+          className="heading-anchor"
+          aria-label={`Link to section: ${textOf(node).trim()}`}
+        >
+          #
+        </a>
+      </Tag>
+    );
+  };
 }
 
 /** The video of a paragraph that holds only a bare YouTube link. */
@@ -153,6 +180,12 @@ const components = {
       />
     );
   },
+  h2: linkedHeading("h2"),
+  h3: linkedHeading("h3"),
+  // Code blocks get a Copy button (client component; the code itself is server HTML).
+  pre({ node, children, ...props }) {
+    return <CodeBlock {...props}>{children}</CodeBlock>;
+  },
   // Wide tables scroll sideways inside their own box instead of widening the page.
   table({ node, children, ...props }) {
     return (
@@ -175,7 +208,8 @@ const rehypePlugins = [rehypeSlug, rehypeHighlight, rehypeCallouts];
  * - two or more images with no text between them render as a photo grid;
  * - a YouTube address on a line of its own renders as a click-to-play video;
  * - a quote starting with `[!NOTE]`, `[!TIP]` or `[!WARNING]` renders as a callout box;
- * - an image with a title, `![alt](url "caption")`, renders with that caption under it.
+ * - an image with a title, `![alt](url "caption")`, renders with that caption under it;
+ * - h2 and h3 carry a "#" link to themselves, and code blocks a Copy button.
  */
 export default function Markdown({ children }) {
   return (

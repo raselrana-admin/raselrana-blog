@@ -1,5 +1,6 @@
+import ListingHeader from "@/components/blog/ListingHeader";
 import { tagPath } from "@/lib/posts";
-import { container, pageHeading, pageLabel } from "@/lib/ui";
+import { container } from "@/lib/ui";
 import { getTagCounts } from "@/services/posts/queries";
 import Link from "next/link";
 
@@ -16,18 +17,12 @@ export default async function TopicsPage() {
 
   return (
     <>
-      <section className={`${container} py-16 md:py-20`}>
-        <p className={`${pageLabel} rise`}>
-          <span aria-hidden className="h-px w-10 bg-[var(--signal)]" />
-          Blog
-        </p>
-        <h1
-          className={`${pageHeading} rise mt-6`}
-          style={{ "--delay": "80ms" }}
-        >
-          Topics
-        </h1>
-      </section>
+      <ListingHeader
+        title="Topics"
+        description="Every topic on the blog, with how many posts it has."
+        count={topics.length}
+        unit="topic"
+      />
 
       <section className="border-t border-[var(--line)]">
         <div className={`${container} py-16 md:py-20`}>

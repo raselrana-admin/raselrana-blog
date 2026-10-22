@@ -3,7 +3,7 @@ import PostArticle from "@/components/blog/PostArticle";
 import PostCard from "@/components/blog/PostCard";
 import PostNav from "@/components/blog/PostNav";
 import { cloudinaryUrl } from "@/lib/cloudinary-loader";
-import { postDate, postPath, postUrl, SITE_URL } from "@/lib/posts";
+import { BLOG_URL, postDate, postPath, postUrl, SITE_URL } from "@/lib/posts";
 import { cardGrid, container, sectionHeading } from "@/lib/ui";
 import {
   coverOf,
@@ -18,10 +18,13 @@ import { notFound, permanentRedirect } from "next/navigation";
 // category, …) win over it, and RESERVED_SLUGS keeps posts from taking their names.
 
 /** The picture shown when the link is shared: the featured image unless the post names another. */
+// The post's own share image, else its cover, else a generated one (/api/og/<slug>).
 function shareImageOf(post) {
   const cover = coverOf(post);
   return {
-    url: post.ogImageUrl || (cover ? cloudinaryUrl(cover.url, 1200) : null),
+    url:
+      post.ogImageUrl ||
+      (cover ? cloudinaryUrl(cover.url, 1200) : `${BLOG_URL}/api/og/${post.slug}`),
     alt: cover?.alt || post.title,
   };
 }
@@ -65,13 +68,13 @@ export async function generateMetadata({ params }) {
       authors: [post.author?.name ?? "Rasel Rana"],
       section: post.category?.name,
       tags: post.tags.map((tag) => tag.name),
-      images: image.url ? [{ url: image.url, alt: image.alt }] : undefined,
+      images: [{ url: image.url, alt: image.alt }],
     },
     twitter: {
-      card: image.url ? "summary_large_image" : "summary",
+      card: "summary_large_image",
       title,
       description,
-      images: image.url ? [image.url] : undefined,
+      images: [image.url],
     },
   };
 }

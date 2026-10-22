@@ -84,6 +84,9 @@ p { text-wrap: pretty; }
   border-radius: 2px;
 }
 
+/* On the navy --inverse panels Brand Blue is under 3:1, so the ring follows the text */
+.on-inverse :focus-visible { outline-color: var(--on-inverse); }
+
 ::selection { background: var(--signal); color: var(--paper); }
 
 /* Entrance motion: CSS only, so content never waits for JavaScript. */
@@ -264,6 +267,49 @@ dialog::backdrop {
   font-family: inherit;
   background: none;
   padding: 0;
+}
+
+/* Copy button on code blocks (CodeBlock.jsx). Without JavaScript there is no
+   button and the block looks like any other <pre>. */
+.article .code-block { position: relative; margin: 1.25em 0; }
+.article .code-block > pre { margin: 0; }
+.article .code-block.has-copy > pre { padding-top: 2.75rem; } /* room for the button */
+
+.article .code-copy {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  min-height: 1.75rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--field);
+  border-radius: 9999px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.article .code-copy:hover { border-color: var(--signal); color: var(--signal); }
+
+/* "#" link after h2/h3 (Markdown.jsx): shown on hover or focus, always on touch screens */
+.article .heading-anchor {
+  margin-left: 0.4em;
+  color: var(--slate);
+  font-weight: 400;
+  text-decoration: none;
+  opacity: 0;
+}
+
+.article h2:hover .heading-anchor,
+.article h3:hover .heading-anchor,
+.article .heading-anchor:focus-visible { opacity: 1; }
+
+.article .heading-anchor:hover { color: var(--signal); }
+
+@media (hover: none) {
+  .article .heading-anchor { opacity: 1; }
 }
 
 .article del { color: var(--slate); }

@@ -47,6 +47,7 @@ Two specifications come from the main site project (`raselrana-web`). `docs/bran
 - Logo: drawn inline from `src/lib/brand.js` by `components/brand/BrandLogo.jsx` (mark + "Rasel Rana", header 32px, footer 56px with `tagline`) and `BrandMark.jsx` (the tile alone). Never redraw or recolour it. The original files are in `src/asset/brand/rasel-rana-logo/`; the browser icons are `src/app/icon.svg`, `favicon.ico`, `apple-icon.png`, `icon1.png`, `icon2.png`.
 - Ready-made class strings (container, headings, card, chip, buttons, input, `cardGrid()`) live in `src/lib/ui.js`; use those instead of retyping them.
 - Theme: `next-themes` with `attribute="class"`, `defaultTheme="system"`, `enableSystem` and the default storage key. Both sites share one origin, so this is what carries the visitor's theme across; do not change the settings. The toggle is the main site's (`layout/ThemeToggle.jsx`); its icon waits for the client via `useIsMounted()` (`src/lib/use-is-mounted.js`).
+- Public page layout: the blog home opens with the intro and search beside `TypeIndex` (a navy `--inverse` panel listing the content types that have posts, with counts from `getContentTypeCounts()`; each type's `summary` is in `src/lib/content-types.js`). Archives (home, category, topic, type, author, search) are dated lists of `PostRow` via `PostListing`; `PostCard` is only for the home feature (`FeatureCard`) and related posts. Inside navy panels add the `on-inverse` class so the focus ring turns light (Brand Blue is under 3:1 on navy).
 - Entrance motion is CSS only (`rise`, `reveal`). Never hide content until JavaScript runs; every public page must be readable from the server HTML. That is why search is a GET form and the table of contents is plain anchors that a client component only enhances.
 - Header (`SiteHeader.jsx` + client `HeaderControls.jsx`) matches the main site's bar exactly: 64px, `BrandLogo` 32px, 32px `hc-btn-sm` buttons, links from `md` up. The phone menu (`MobileMenu.jsx`) is the main site's full-screen panel, rendered into `<body>` with a portal and driven by `useDialogFocus()` (`src/lib/use-dialog-focus.js`). Until JavaScript runs the menu button is a plain link to `#site-footer`, which lists the same pages; keep that fallback.
 - `rise`/`reveal` elements are transformed, and the header has a backdrop blur, so nothing `position: fixed` may live inside them: render overlays into `document.body` with `createPortal` (`ReadingProgress` is rendered outside; the delete confirmation uses a native `<dialog>`).
@@ -119,12 +120,14 @@ Pages that read `searchParams` or a dynamic segment are rendered per request, so
 
 `src/components/mdx/Markdown.jsx` is the single renderer (GFM, heading ids, syntax highlighting, raw HTML dropped, external links in a new tab, Cloudinary-resized images). It has no `"use client"` so the post page renders it on the server and `PostEditor` reuses it for the live preview; keep it free of server-only imports. Its output must sit inside an element with class `article` (styles in `globals.css`).
 
-Four conventions go beyond plain Markdown, both decided by looking at a paragraph's contents:
+Four conventions go beyond plain Markdown, all decided by looking at a paragraph's contents:
 
 - two or more images with nothing else in the paragraph (image lines directly under each other) render as a photo grid (`.gallery`), each linking to the full-size image;
 - a blockquote starting with `[!NOTE]`, `[!TIP]` or `[!WARNING]` renders as a callout box (`src/lib/rehype-callouts.js`);
 - one image with a title, `![alt](url "caption")`, renders as a `<figure>` with that caption;
 - a bare YouTube address alone in a paragraph renders as `YouTubeEmbed` (thumbnail and play button; the player loads from `youtube-nocookie.com` only on click, and without JavaScript it is a plain link). A YouTube link inside a sentence stays a link. Parsing is in `src/lib/youtube.js`.
+
+It also adds two reading tools: `h2`/`h3` end with a `#` link to themselves (`.heading-anchor`, shown on hover or focus, named "Link to section: …"), and every `<pre>` renders through the client component `components/mdx/CodeBlock.jsx`, which adds a Copy button after hydration and makes the block focusable so long lines can be scrolled by keyboard.
 
 `src/lib/toc.js` builds the table of contents with the same slugger order as `rehype-slug`, so ids match the rendered headings.
 
@@ -147,6 +150,7 @@ Login rate limiting (`src/lib/login-rate-limit.js`): every attempt is stored as 
 ### API
 
 - The article page embeds `TechArticle` JSON-LD; `dateModified` is `contentUpdatedAt ?? publishedAt`, never `updatedAt`.
+- `GET /api/og` and `GET /api/og/[slug]` — public link-preview pictures (1200×630, `src/lib/share-image.jsx`, Poppins TTFs in `src/asset/fonts/`). The root layout uses `/blog/api/og` for every page; a post uses its `ogImageUrl`, else its cover, else `/api/og/<slug>`. Only live posts; while `COMING_SOON` is on, every post gets the blog picture. Satori has no CSS variables, so its colours are written out there.
 - `GET /api/posts?limit=` — **public, and a contract with the main site** (its home page shows the newest posts). Only listed posts with `showOnMainSite` on. The shape, caching header and rules are in `docs/main-site-api.md`; fields may be added but not removed or renamed, and never content or ids.
 - `GET /api/posts/slug-check?slug=&except=` — signed-in users; used by the pre-publish checklist.
 - `POST /api/posts`, `PATCH /api/posts/[id]` — any signed-in user who may edit the post; setting a status other than `DRAFT` needs `ADMIN`. The editor always sends the full post, including `status`.

@@ -1,22 +1,21 @@
 import Pagination from "@/components/blog/Pagination";
-import PostCard from "@/components/blog/PostCard";
-import { cardGrid } from "@/lib/ui";
+import PostRow from "@/components/blog/PostRow";
 
 /**
- * A grid of post cards with paging, or `empty` when there is nothing to show.
- * `cardHeading` is the card title element (see PostCard).
+ * A dated list of posts with paging, or `empty` when there is nothing to show.
+ * `heading` is the post title element (see PostRow).
  */
-export default function PostListing({ posts, page, totalPages, hrefFor, empty, cardHeading }) {
+export default function PostListing({ posts, page, totalPages, hrefFor, empty, heading }) {
   if (posts.length === 0) {
     return <p className="text-[var(--slate)]">{empty}</p>;
   }
   return (
     <>
-      <div className={cardGrid(posts.length)}>
+      <ul>
         {posts.map((post) => (
-          <PostCard key={post.slug} post={post} heading={cardHeading} />
+          <PostRow key={post.slug} post={post} heading={heading} />
         ))}
-      </div>
+      </ul>
       <Pagination page={page} totalPages={totalPages} hrefFor={hrefFor} />
     </>
   );

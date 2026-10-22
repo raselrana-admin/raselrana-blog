@@ -200,6 +200,16 @@ export async function getTagCounts() {
     .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 }
 
+/** `Map(contentType value → number of listed posts)`; types without posts are absent. */
+export async function getContentTypeCounts() {
+  const groups = await prisma.post.groupBy({
+    by: ["contentType"],
+    where: listedPostWhere(),
+    _count: { _all: true },
+  });
+  return new Map(groups.map((group) => [group.contentType, group._count._all]));
+}
+
 export async function getTagBySlug(slug) {
   return prisma.tag.findUnique({
     where: { slug },
