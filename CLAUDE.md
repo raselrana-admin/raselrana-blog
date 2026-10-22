@@ -14,6 +14,7 @@ npx prisma db push                  # sync prisma/schema.prisma to MongoDB (no m
 npx prisma generate                 # regenerate the client (also runs on postinstall)
 node src/scripts/create-admin.js    # upsert the admin user from ADMIN_EMAIL / ADMIN_PASSWORD / ADMIN_NAME in .env.local
 npm run seed:categories             # create the launch categories; safe to run again
+npm run import:posts                # import content/seed-posts/*.md (YAML header + Markdown) as DRAFT posts by slug; --dry-run to preview
 ```
 
 There is no test suite or test runner configured.

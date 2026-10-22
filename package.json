@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "seed:categories": "node src/scripts/seed-categories.js",
+    "import:posts": "node --dns-result-order=ipv4first --disable-warning=MODULE_TYPELESS_PACKAGE_JSON src/scripts/import-posts.mjs",
     "postinstall": "prisma generate"
   },
   "dependencies": {
