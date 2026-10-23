@@ -32,6 +32,7 @@ Look and accessibility follow [docs/brand-guide.md](docs/brand-guide.md); struct
 **For the author** (at `/blog/admin`)
 - Posts list with filters; Markdown editor with live preview, autosave, image uploads, a pre-publish checklist and scheduling.
 - Categories, topics (rename, merge) and profile pages; login rate limiting and role-based permissions.
+- **System** page: live checks of the database, Cloudinary, Resend, the website sign-in and the site settings, with a test email; a summary of it on the Overview.
 - **Super admin:** the website owner, signed in at `raselrana.com.bd/admin`, opens **Apps → Blog admin** and lands in the blog admin with no second password ([docs/blog-admin-handover.md](docs/blog-admin-handover.md)). Other admins and authors use the blog's own login.
 - **Site live switch** (super admin): turns the public blog on or off without a redeploy, after a warning; every flip is emailed and listed in the admin.
 

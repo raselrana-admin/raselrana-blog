@@ -1,4 +1,5 @@
 import StatusBadge from "@/components/admin/StatusBadge";
+import SystemSummary, { SystemSummaryLoading } from "@/components/admin/SystemSummary";
 import { formatDate, formatDateTime } from "@/lib/posts";
 import { buttonPrimary, metaLine, pageLabel } from "@/lib/ui";
 import {
@@ -8,6 +9,7 @@ import {
   getUpcomingScheduledPosts,
 } from "@/services/posts/queries";
 import Link from "next/link";
+import { Suspense } from "react";
 
 export const metadata = { title: "Overview" };
 
@@ -94,7 +96,14 @@ export default async function OverviewPage() {
         </Link>
       </div>
 
-      <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {/* Streams in when the live checks finish; the rest of the page does not wait. */}
+      <div className="mt-10">
+        <Suspense fallback={<SystemSummaryLoading />}>
+          <SystemSummary />
+        </Suspense>
+      </div>
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <CountCard label="Drafts" value={counts.DRAFT} href="/admin/posts?status=DRAFT" />
         <CountCard label="Scheduled" value={counts.SCHEDULED} href="/admin/posts?status=SCHEDULED" />
         <CountCard label="Published" value={counts.PUBLISHED} href="/admin/posts?status=PUBLISHED" />

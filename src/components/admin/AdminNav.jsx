@@ -12,6 +12,7 @@ const links = [
   { href: "/admin/categories", label: "Categories" },
   { href: "/admin/tags", label: "Tags" },
   { href: "/admin/profile", label: "Profile" },
+  { href: "/admin/system", label: "System" },
   // The "Site live" switch; only the super admin may use it.
   { href: "/admin/site", label: "Site", superAdmin: true },
   { href: "/", label: "View site", external: true },
