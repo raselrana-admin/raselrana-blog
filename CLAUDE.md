@@ -170,7 +170,6 @@ Login rate limiting (`src/lib/login-rate-limit.js`): every attempt is stored as 
 - `docs/BLOG_ADMIN_SPEC.md` section 12 lists what is built.
 - Out of scope by decision: RSS, comments, newsletter, visual editor.
 - Deleting a post does not delete its images from Cloudinary.
-- `src/lib/mdx.js`, `src/services/posts/model.js` and `src/services/uploads/actions.js` are empty leftover files.
 
 ## Environment variables
 
