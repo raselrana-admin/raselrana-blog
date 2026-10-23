@@ -1,14 +1,42 @@
 "use server";
 
 import { ActionError, runAdminAction } from "@/lib/admin-action";
+import { AuthzError, requireRole } from "@/lib/authz";
 import { notifyOwner } from "@/lib/notify";
+import { revalidatePath } from "next/cache";
+
+const BACK = "/admin/system";
+const MIN_GAP_MS = 30 * 1000;
+let lastRun = 0; // per server instance; enough to stop repeated clicks
+
+/**
+ * "Check again" (CheckAgainButton, through useActionState): runs the checks again by
+ * re-rendering the page. At most once per 30 seconds, so the services the checks
+ * call are not hammered. Returns `{ ok, at }` or `{ error }`.
+ */
+export async function recheckSystemAction() {
+  try {
+    await requireRole("ADMIN");
+  } catch (error) {
+    if (error instanceof AuthzError) return { error: "Please sign in again." };
+    throw error;
+  }
+
+  const now = Date.now();
+  if (now - lastRun < MIN_GAP_MS) {
+    return { error: "The checks ran less than 30 seconds ago. Please wait a moment." };
+  }
+  lastRun = now;
+  revalidatePath(BACK);
+  return { ok: true, at: now };
+}
 
 // Sends one notification through the same path as the site switch, so a delivered
 // email proves the whole chain (key, sender, domain) works.
 export async function sendTestEmailAction() {
   await runAdminAction({
-    back: "/admin/system",
-    done: "Test email accepted by Resend. Check the inbox it was sent to.",
+    back: BACK,
+    done: "Test email sent",
     work: async (user) => {
       const sent = await notifyOwner({
         to: user.email,

@@ -2,11 +2,18 @@ import Notice from "@/components/admin/Notice";
 import { readNotice } from "@/lib/admin-action";
 import { getCurrentUser } from "@/lib/authz";
 import { formatDateTime } from "@/lib/posts";
-import { CHECK_EVERY_MINUTES, getSiteStatus } from "@/lib/site-status";
-import { buttonPrimary, buttonSecondary, metaLine } from "@/lib/ui";
+import {
+  delayText,
+  getSiteMessage,
+  getSiteStatus,
+  MESSAGE_MAX_LENGTH,
+  STANDARD_TEXT,
+} from "@/lib/site-status";
+import { buttonPrimary, buttonSecondary, fieldLabel, input, metaLine } from "@/lib/ui";
 import { getPostCounts } from "@/services/posts/queries";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { setSiteMessageAction } from "./actions";
 import SwitchDialog from "./SwitchDialog";
 import SwitchWarning from "./SwitchWarning";
 
@@ -22,7 +29,11 @@ export default async function SitePage({ searchParams }) {
   if (user?.role !== "SUPER_ADMIN") notFound();
 
   const params = await searchParams;
-  const [status, counts] = await Promise.all([getSiteStatus(), getPostCounts()]);
+  const [status, counts, message] = await Promise.all([
+    getSiteStatus(),
+    getPostCounts(),
+    getSiteMessage(),
+  ]);
   const goLive = !status.live;
   const confirming = params.confirm === "1";
 
@@ -46,8 +57,9 @@ export default async function SitePage({ searchParams }) {
           {status.live
             ? "Visitors see the blog."
             : "Visitors see the under-development page instead of the blog."}{" "}
-          A change reaches every visitor within {CHECK_EVERY_MINUTES} minutes, and you get an
-          email each time it is switched.
+          Switching it on reaches every visitor {delayText(true)}, switching it off{" "}
+          {delayText(false)}. You get an email each time, and signed-in blog users always see the
+          blog.
         </p>
         {status.latest && (
           <p className={`${metaLine} mt-3`}>
@@ -68,6 +80,7 @@ export default async function SitePage({ searchParams }) {
               <SwitchWarning
                 goLive={goLive}
                 counts={counts}
+                message={message?.text}
                 titleId="switch-confirm-title"
                 cancel={
                   <Link href="/admin/site" className={buttonSecondary}>
@@ -86,6 +99,7 @@ export default async function SitePage({ searchParams }) {
               <SwitchWarning
                 goLive={goLive}
                 counts={counts}
+                message={message?.text}
                 titleId="switch-dialog-title"
                 cancel={
                   // Closes the dialog without JavaScript-side code; focused first.
@@ -99,6 +113,36 @@ export default async function SitePage({ searchParams }) {
             </SwitchDialog>
           )}
         </div>
+
+        <form action={setSiteMessageAction} className="mt-8 border-t border-[var(--line)] pt-6">
+          <label htmlFor="site-message" className={fieldLabel}>
+            Message for visitors
+          </label>
+          <p id="site-message-help" className="mb-3 text-sm text-[var(--slate)]">
+            Shown on the under-development page. Leave it empty for the standard text. At most{" "}
+            {MESSAGE_MAX_LENGTH} characters.
+          </p>
+          <textarea
+            id="site-message"
+            name="message"
+            rows={4}
+            maxLength={MESSAGE_MAX_LENGTH}
+            defaultValue={message?.text ?? ""}
+            placeholder={status.everLive ? STANDARD_TEXT.backSoon : STANDARD_TEXT.comingSoon}
+            aria-describedby="site-message-help"
+            className={`${input} resize-y leading-relaxed`}
+          />
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+            <p className={metaLine}>
+              {message?.updatedAt
+                ? `Last changed ${formatDateTime(message.updatedAt)} by ${message.userName}`
+                : "Not changed yet: visitors see the standard text."}
+            </p>
+            <button type="submit" className={`${buttonPrimary} px-5 py-2.5`}>
+              Save message
+            </button>
+          </div>
+        </form>
       </section>
 
       <section className={panel} aria-labelledby="site-history">
