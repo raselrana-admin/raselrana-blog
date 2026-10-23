@@ -13,13 +13,14 @@ export class ActionError extends Error {}
  * logged and replaced by a generic message.
  *
  * Server actions can be called without loading the page, so the user check lives
- * here: ADMIN by default, any signed-in user with `{ admin: false }`.
+ * here: ADMIN by default, another minimum role with `{ role: "SUPER_ADMIN" }`, any
+ * signed-in user with `{ admin: false }`.
  */
-export async function runAdminAction({ back, done, admin = true, work }) {
+export async function runAdminAction({ back, done, admin = true, role = "ADMIN", work }) {
   let message = null;
 
   try {
-    const user = admin ? await requireRole("ADMIN") : await requireUser();
+    const user = admin ? await requireRole(role) : await requireUser();
     await work(user);
   } catch (error) {
     if (error instanceof AuthzError) {

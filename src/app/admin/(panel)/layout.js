@@ -31,7 +31,7 @@ export default async function AdminPanelLayout({ children }) {
             </div>
           </div>
 
-          <AdminNav />
+          <AdminNav isSuperAdmin={user.role === "SUPER_ADMIN"} />
 
           <div className="mt-auto hidden space-y-4 border-t border-[var(--line)] p-6 lg:block">
             <p className="break-words text-xs text-[var(--slate)]">
