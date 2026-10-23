@@ -14,7 +14,8 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-// Shown for every public address while COMING_SOON is on (see src/proxy.js).
+// Shown for every public address while the "Site live" switch is off (admin → Site;
+// src/lib/site-status.js, rewrite in src/proxy.js).
 // No menu or footer on purpose: their links lead to pages that are not open yet.
 export default function ComingSoonPage() {
   return (

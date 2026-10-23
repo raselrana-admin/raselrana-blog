@@ -1,6 +1,6 @@
-import { COMING_SOON } from "@/lib/coming-soon";
 import { CONTENT_TYPES } from "@/lib/content-types";
 import { BLOG_URL, categoryPath, postPath, tagPath, typePath } from "@/lib/posts";
+import { isSiteLive } from "@/lib/site-status";
 import { getSitemapData } from "@/services/posts/queries";
 
 // Served at /blog/sitemap.xml. Rebuilt at most every 5 minutes, so a scheduled post
@@ -15,8 +15,8 @@ const MIN_POSTS_FOR_TAG_PAGE = 2;
  * Drafts, archived, not-yet-due and noindex posts are never here.
  */
 export default async function sitemap() {
-  // Every address shows the "coming soon" page, so there is nothing to list yet.
-  if (COMING_SOON) return [];
+  // Every address shows the under-development page, so there is nothing to list yet.
+  if (!(await isSiteLive())) return [];
 
   const { posts, categories, types, tags } = await getSitemapData();
   const url = (path) => `${BLOG_URL}${path === "/" ? "" : path}`;

@@ -128,3 +128,17 @@ model LoginAttempt {
 
   @@index([key, createdAt])
 }
+
+// "Site live" switch (src/lib/site-status.js): one row per flip. The newest row
+// is the current state; no row yet means not live. Only the super admin flips it.
+model SiteStatusChange {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  live      Boolean
+  changedAt DateTime @default(now())
+  userId    String   @db.ObjectId
+  userName  String
+  userEmail String
+
+  @@index([changedAt])
+  @@map("site_status_changes")
+}

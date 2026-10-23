@@ -1,6 +1,6 @@
 // Next.js 16 request proxy (replaces middleware.js)
 import { auth } from "@/lib/auth";
-import { COMING_SOON } from "@/lib/coming-soon";
+import { isSiteLive } from "@/lib/site-status";
 import { NextResponse } from "next/server";
 
 // The request Auth.js hands over has lost the Next.js basePath, so add it back.
@@ -28,14 +28,15 @@ const adminProxy = auth((req) => {
 const isOpenWhileComingSoon = (pathname) =>
   pathname === "/coming-soon" || pathname.startsWith("/preview/");
 
-export default function proxy(req, event) {
+export default async function proxy(req, event) {
   const { pathname } = req.nextUrl;
 
   if (pathname === "/admin" || pathname.startsWith("/admin/")) {
     return adminProxy(req, event);
   }
 
-  if (COMING_SOON && !isOpenWhileComingSoon(pathname)) {
+  // The "Site live" switch (admin → Site); checked at most every 10 minutes per server.
+  if (!isOpenWhileComingSoon(pathname) && !(await isSiteLive())) {
     // A rewrite, not a redirect: the address stays, and it works again at launch.
     const url = req.nextUrl.clone();
     url.pathname = "/coming-soon";
