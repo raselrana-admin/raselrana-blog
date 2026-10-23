@@ -32,7 +32,9 @@ Look and accessibility follow [docs/brand-guide.md](docs/brand-guide.md); struct
 **For the author** (at `/blog/admin`)
 - Posts list with filters; Markdown editor with live preview, autosave, image uploads, a pre-publish checklist and scheduling.
 - Categories, topics (rename, merge) and profile pages; login rate limiting and role-based permissions.
+- **System** page: live checks of the database, Cloudinary, Resend, the website sign-in and the site settings, with a test email; a summary of it on the Overview.
 - **Super admin:** the website owner, signed in at `raselrana.com.bd/admin`, opens **Apps → Blog admin** and lands in the blog admin with no second password ([docs/blog-admin-handover.md](docs/blog-admin-handover.md)). Other admins and authors use the blog's own login.
+- **Site live switch** (super admin): turns the public blog on or off without a redeploy, after a warning; every flip is emailed and listed in the admin.
 
 **For the main site**
 - `GET /blog/api/posts?limit=3` feeds its "Latest writing" section ([docs/main-site-api.md](docs/main-site-api.md)).
@@ -108,21 +110,21 @@ src/
   providers/     Auth.js session provider (admin pages only)
   scripts/       create-admin, seed-categories, import-posts
   services/      posts, taxonomy, users, uploads
-  proxy.js       guards /admin and serves "coming soon" in production before launch
+  proxy.js       guards /admin; serves the under-development page while the site is not live
 ```
 
 `CLAUDE.md` holds the detailed architecture notes and the rules that are easy to break (base path, permissions, the main-site API).
 
 ## Going live
 
-In the blog's Vercel project:
+1. In the blog's Vercel project, set:
+   - `MAIN_SITE_URL=https://raselrana.com.bd`, or the owner cannot sign in from the website dashboard;
+   - `AUTH_URL=https://raselrana.com.bd/blog/api/auth`;
+   - `RESEND_API_KEY` and `NOTIFY_EMAIL_FROM`, for the email sent each time the site is switched.
 
-- `MAIN_SITE_URL=https://raselrana.com.bd`, or the owner cannot sign in from the website dashboard.
-- `AUTH_URL=https://raselrana.com.bd/blog/api/auth`.
-- `BLOG_LAUNCHED=true` replaces the "coming soon" page with the blog. Until then `/blog/admin` still works, and preview deployments always show the blog.
-- `BLOG_INDEXABLE=true` lets search engines in. Until then every page is `noindex`; `/blog/admin` always is.
-
-Redeploy after changing them.
+   Redeploy after changing them.
+2. Open **Blog admin → Site** and switch the site live. A warning shows what will change first, you get an email, and visitors see the blog within 10 minutes. Switch it back the same way. Until it is switched on, visitors see the under-development page; `/blog/admin` always works, and preview deployments always show the blog.
+3. When search engines may come in, set `BLOG_INDEXABLE=true` in Vercel and redeploy. Until then every page is `noindex`; `/blog/admin` always is.
 
 ## Git workflow
 

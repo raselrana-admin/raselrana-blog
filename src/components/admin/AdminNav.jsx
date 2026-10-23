@@ -12,6 +12,9 @@ const links = [
   { href: "/admin/categories", label: "Categories" },
   { href: "/admin/tags", label: "Tags" },
   { href: "/admin/profile", label: "Profile" },
+  { href: "/admin/system", label: "System" },
+  // The "Site live" switch; only the super admin may use it.
+  { href: "/admin/site", label: "Site", superAdmin: true },
   { href: "/", label: "View site", external: true },
 ];
 
@@ -29,10 +32,10 @@ function isActive(link, pathname) {
     : pathname === link.href || pathname.startsWith(`${link.href}/`);
 }
 
-function NavList({ pathname, onNavigate }) {
+function NavList({ pathname, onNavigate, isSuperAdmin }) {
   return (
     <ul className="space-y-1">
-      {links.map((link) => {
+      {links.filter((link) => isSuperAdmin || !link.superAdmin).map((link) => {
         const active = isActive(link, pathname);
         return (
           <li key={link.href}>
@@ -57,7 +60,8 @@ function NavList({ pathname, onNavigate }) {
 }
 
 /** Sidebar links: always open on wide screens, a collapsible menu on phones. */
-export default function AdminNav() {
+/** `isSuperAdmin` adds the links only the super admin may use (the pages check too). */
+export default function AdminNav({ isSuperAdmin = false }) {
   const pathname = usePathname();
   const menuRef = useRef(null);
 
@@ -70,7 +74,7 @@ export default function AdminNav() {
   return (
     <>
       <nav aria-label="Admin" className="hidden px-3 py-2 lg:block">
-        <NavList pathname={pathname} />
+        <NavList pathname={pathname} isSuperAdmin={isSuperAdmin} />
       </nav>
 
       <details
@@ -81,7 +85,7 @@ export default function AdminNav() {
           Menu
         </summary>
         <nav aria-label="Admin" className="space-y-4 px-3 pb-4">
-          <NavList pathname={pathname} onNavigate={closeMenu} />
+          <NavList pathname={pathname} onNavigate={closeMenu} isSuperAdmin={isSuperAdmin} />
           <div className="px-3">
             <SignOutButton />
           </div>

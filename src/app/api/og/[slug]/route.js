@@ -1,17 +1,17 @@
-import { COMING_SOON } from "@/lib/coming-soon";
 import { contentTypeByValue } from "@/lib/content-types";
 import { formatDate, postDate } from "@/lib/posts";
 import { blogShareImage, shareImage } from "@/lib/share-image";
+import { isSiteLive } from "@/lib/site-status";
 import { getLivePostBySlug } from "@/services/posts/queries";
 
 /**
  * Public: the link-preview picture of a post that has no cover or share image
- * of its own. Only live posts; while the blog is "coming soon" every post gets
+ * of its own. Only live posts; while the blog is under development every post gets
  * the blog's picture, so nothing unpublished leaks through it.
  */
 export async function GET(request, { params }) {
   // Before the post lookup, so it does not tell which addresses exist either.
-  if (COMING_SOON) return blogShareImage();
+  if (!(await isSiteLive())) return blogShareImage();
 
   const { slug } = await params;
   const post = await getLivePostBySlug(slug);
