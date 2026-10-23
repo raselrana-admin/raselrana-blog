@@ -1,7 +1,7 @@
 "use server";
 
 import { runAdminAction } from "@/lib/admin-action";
-import { setSiteLive } from "@/lib/site-status";
+import { delayText, MESSAGE_MAX_LENGTH, setSiteLive, setSiteMessage } from "@/lib/site-status";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -25,9 +25,27 @@ export async function setSiteLiveAction(formData) {
         return;
       }
       message = live
-        ? "The site is live. Visitors see the blog within 10 minutes."
-        : "The site is under development. Visitors see that page within 10 minutes.";
+        ? `The site is live. Visitors see the blog ${delayText(true)}.`
+        : `The site is under development. Visitors see that page ${delayText(false)}.`;
       if (!emailed) message += " The email notification was not sent (check the email settings).";
+    },
+  });
+}
+
+const messageSchema = z
+  .string("The message must be text")
+  .transform((text) => text.replace(/\r\n/g, "\n").trim())
+  .pipe(z.string().max(MESSAGE_MAX_LENGTH, `The message must be ${MESSAGE_MAX_LENGTH} characters or fewer`));
+
+// The text visitors see while the site is off ("" = the standard text). Super admin only.
+export async function setSiteMessageAction(formData) {
+  await runAdminAction({
+    back: BACK,
+    role: "SUPER_ADMIN",
+    done: "Message saved.",
+    work: async (user) => {
+      await setSiteMessage(user, messageSchema.parse(formData.get("message") ?? ""));
+      revalidatePath(BACK);
     },
   });
 }

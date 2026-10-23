@@ -34,7 +34,8 @@ Look and accessibility follow [docs/brand-guide.md](docs/brand-guide.md); struct
 - Categories, topics (rename, merge) and profile pages; login rate limiting and role-based permissions.
 - **System** page: live checks of the database, Cloudinary, Resend, the website sign-in and the site settings, with a test email; a summary of it on the Overview.
 - **Super admin:** the website owner, signed in at `raselrana.com.bd/admin`, opens **Apps → Blog admin** and lands in the blog admin with no second password ([docs/blog-admin-handover.md](docs/blog-admin-handover.md)). Other admins and authors use the blog's own login.
-- **Site live switch** (super admin): turns the public blog on or off without a redeploy, after a warning; every flip is emailed and listed in the admin.
+- **Site live switch** (super admin): turns the public blog on or off without a redeploy, after a warning; every flip is emailed and listed. While off, visitors get an under-development page (status 503) with your own message, and signed-in users still see the blog with a banner.
+- Dashboard like the website's: a top bar (View site, theme, sign-out, an "Under development" pill) and pop-up confirmations after saving.
 
 **For the main site**
 - `GET /blog/api/posts?limit=3` feeds its "Latest writing" section ([docs/main-site-api.md](docs/main-site-api.md)).

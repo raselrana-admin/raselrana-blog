@@ -1,42 +1,15 @@
 "use client";
 
-import SignOutButton from "@/components/auth/sign-out-button";
+import { ADMIN_LINKS, isActiveLink } from "@/lib/admin-nav";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
-const links = [
-  { href: "/admin", label: "Overview", exact: true },
-  { href: "/admin/posts", label: "Posts", exact: true },
-  { href: "/admin/posts/new", label: "New post" },
-  { href: "/admin/categories", label: "Categories" },
-  { href: "/admin/tags", label: "Tags" },
-  { href: "/admin/profile", label: "Profile" },
-  { href: "/admin/system", label: "System" },
-  // The "Site live" switch; only the super admin may use it.
-  { href: "/admin/site", label: "Site", superAdmin: true },
-  { href: "/", label: "View site", external: true },
-];
-
-function isActive(link, pathname) {
-  if (link.external) return false;
-  // "Posts" also covers a post being edited, but not "New post".
-  if (link.href === "/admin/posts") {
-    return (
-      pathname === "/admin/posts" ||
-      (pathname.startsWith("/admin/posts/") && pathname !== "/admin/posts/new")
-    );
-  }
-  return link.exact
-    ? pathname === link.href
-    : pathname === link.href || pathname.startsWith(`${link.href}/`);
-}
-
 function NavList({ pathname, onNavigate, isSuperAdmin }) {
   return (
     <ul className="space-y-1">
-      {links.filter((link) => isSuperAdmin || !link.superAdmin).map((link) => {
-        const active = isActive(link, pathname);
+      {ADMIN_LINKS.filter((link) => isSuperAdmin || !link.superAdmin).map((link) => {
+        const active = isActiveLink(link, pathname);
         return (
           <li key={link.href}>
             <Link
@@ -50,7 +23,6 @@ function NavList({ pathname, onNavigate, isSuperAdmin }) {
               }`}
             >
               {link.label}
-              {link.external && <span aria-hidden> ↗</span>}
             </Link>
           </li>
         );
@@ -59,8 +31,11 @@ function NavList({ pathname, onNavigate, isSuperAdmin }) {
   );
 }
 
-/** Sidebar links: always open on wide screens, a collapsible menu on phones. */
-/** `isSuperAdmin` adds the links only the super admin may use (the pages check too). */
+/**
+ * Sidebar links: always open on wide screens, a collapsible menu on phones.
+ * `isSuperAdmin` adds the links only the super admin may use (the pages check too).
+ * "View site", the theme and sign-out live in the top bar (AdminTopBar).
+ */
 export default function AdminNav({ isSuperAdmin = false }) {
   const pathname = usePathname();
   const menuRef = useRef(null);
@@ -84,11 +59,8 @@ export default function AdminNav({ isSuperAdmin = false }) {
         <summary className="cursor-pointer px-6 py-3 font-mono text-xs uppercase tracking-[0.2em] text-[var(--slate)]">
           Menu
         </summary>
-        <nav aria-label="Admin" className="space-y-4 px-3 pb-4">
+        <nav aria-label="Admin" className="px-3 pb-4">
           <NavList pathname={pathname} onNavigate={closeMenu} isSuperAdmin={isSuperAdmin} />
-          <div className="px-3">
-            <SignOutButton />
-          </div>
         </nav>
       </details>
     </>

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.0 — 2026-10-24
+
+- Admin matches the website dashboard: a top bar (page title, View site, theme, sign-out, an "Under development" pill), pop-up confirmations after saving, and the System page as one card per check with a "Check again" button.
+- Message for visitors while under development, set on the Site page; the page says "Back soon" once the blog has been live and answers with status 503.
+- Signed-in blog users see the real blog while it is under development, with a banner.
+- Switching back on reaches visitors within a minute (switching off still within 10 minutes).
+
 ## 1.0.0 — 2026-10-23
 
 First release of the blog at [raselrana.com.bd/blog](https://raselrana.com.bd/blog), served as one zone of the main site.
