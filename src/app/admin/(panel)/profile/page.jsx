@@ -126,63 +126,76 @@ export default async function ProfilePage({ searchParams }) {
         </form>
       </section>
 
-      <section className={panel}>
-        <h2 className="mb-2 font-display text-xl font-medium text-[var(--ink)]">
-          Change password
-        </h2>
-        <p className="mb-5 text-sm text-[var(--slate)]">
-          At least {MIN_PASSWORD_LENGTH} characters. Devices that are already
-          signed in stay signed in.
-        </p>
-        <form action={changePasswordAction} className="grid max-w-xl gap-5">
-          <div>
-            <label htmlFor="password-current" className={fieldLabel}>
-              Current password (required)
-            </label>
-            <input
-              id="password-current"
-              name="current"
-              type="password"
-              autoComplete="current-password"
-              required
-              className={input}
-            />
-          </div>
-          <div>
-            <label htmlFor="password-next" className={fieldLabel}>
-              New password (required)
-            </label>
-            <input
-              id="password-next"
-              name="next"
-              type="password"
-              autoComplete="new-password"
-              minLength={MIN_PASSWORD_LENGTH}
-              required
-              className={input}
-            />
-          </div>
-          <div>
-            <label htmlFor="password-confirm" className={fieldLabel}>
-              New password again (required)
-            </label>
-            <input
-              id="password-confirm"
-              name="confirm"
-              type="password"
-              autoComplete="new-password"
-              minLength={MIN_PASSWORD_LENGTH}
-              required
-              className={input}
-            />
-          </div>
-          <div>
-            <button type="submit" className={`${buttonPrimary} px-5 py-2.5`}>
-              Change password
-            </button>
-          </div>
-        </form>
-      </section>
+      {user.role === "SUPER_ADMIN" ? (
+        // The super admin has no blog password; the main site's dashboard is the way in.
+        <section className={panel}>
+          <h2 className="mb-2 font-display text-xl font-medium text-[var(--ink)]">
+            Password
+          </h2>
+          <p className="text-sm text-[var(--slate)]">
+            You sign in through raselrana.com.bd, so this account has no blog
+            password. Change your password in the website dashboard.
+          </p>
+        </section>
+      ) : (
+        <section className={panel}>
+          <h2 className="mb-2 font-display text-xl font-medium text-[var(--ink)]">
+            Change password
+          </h2>
+          <p className="mb-5 text-sm text-[var(--slate)]">
+            At least {MIN_PASSWORD_LENGTH} characters. Devices that are already
+            signed in stay signed in.
+          </p>
+          <form action={changePasswordAction} className="grid max-w-xl gap-5">
+            <div>
+              <label htmlFor="password-current" className={fieldLabel}>
+                Current password (required)
+              </label>
+              <input
+                id="password-current"
+                name="current"
+                type="password"
+                autoComplete="current-password"
+                required
+                className={input}
+              />
+            </div>
+            <div>
+              <label htmlFor="password-next" className={fieldLabel}>
+                New password (required)
+              </label>
+              <input
+                id="password-next"
+                name="next"
+                type="password"
+                autoComplete="new-password"
+                minLength={MIN_PASSWORD_LENGTH}
+                required
+                className={input}
+              />
+            </div>
+            <div>
+              <label htmlFor="password-confirm" className={fieldLabel}>
+                New password again (required)
+              </label>
+              <input
+                id="password-confirm"
+                name="confirm"
+                type="password"
+                autoComplete="new-password"
+                minLength={MIN_PASSWORD_LENGTH}
+                required
+                className={input}
+              />
+            </div>
+            <div>
+              <button type="submit" className={`${buttonPrimary} px-5 py-2.5`}>
+                Change password
+              </button>
+            </div>
+          </form>
+        </section>
+      )}
     </>
   );
 }

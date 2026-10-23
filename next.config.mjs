@@ -12,6 +12,14 @@ const securityHeaders = [
 const nextConfig = {
   basePath: "/blog",
   poweredByHeader: false,
+  // Visitors reach the blog through the main site's rewrite, so a Server Action's
+  // Origin is the main site's address, not the blog deployment's. Without this the
+  // sign-in and admin forms are refused as "Invalid Server Actions request".
+  experimental: {
+    serverActions: {
+      allowedOrigins: ["raselrana.com.bd", "www.raselrana.com.bd", "localhost:3000"],
+    },
+  },
   images: {
     // Cloudinary does the resizing (f_auto,q_auto,c_limit,w_<width>)
     loader: "custom",
