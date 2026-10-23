@@ -16,6 +16,8 @@ First release of the blog at [raselrana.com.bd/blog](https://raselrana.com.bd/bl
 - Admin at `/blog/admin`: overview, posts list with filters, Markdown editor with live preview, autosave, image uploads to Cloudinary, pre-publish checklist and scheduling.
 - Categories, topics (rename, merge) and profile pages.
 - One-click sign-in from the website dashboard as the blog's super admin; password sign-in with rate limiting for other accounts.
+- **Site live switch** (super admin): turns the public blog on or off without a redeploy, after a warning; every flip is emailed (Resend) and listed. Visitors see a change within 10 minutes.
+- **System** page: live checks of the database, Cloudinary, Resend, the website sign-in and the site settings, with a test email; a summary on the Overview.
 - Six starter posts and `npm run import:posts`.
 
 ### For the main site
@@ -23,4 +25,4 @@ First release of the blog at [raselrana.com.bd/blog](https://raselrana.com.bd/bl
 
 ### Security
 - Next.js 16.4.2 (fixes GHSA-2464-fhr4-w9xw and GHSA-p3m5-59mp-jv5r).
-- "Coming soon" page on production until `BLOG_LAUNCHED=true`.
+- Production shows the under-development page until the site is switched live; a database error counts as not live.
