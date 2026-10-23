@@ -1,4 +1,4 @@
-import { formatDate } from "@/lib/posts";
+import { formatDate, postPath } from "@/lib/posts";
 import { metaLine } from "@/lib/ui";
 import Image from "next/image";
 import Link from "next/link";
@@ -7,6 +7,7 @@ import TagChip from "./TagChip";
 function Meta({ post }) {
   return (
     <p className={metaLine}>
+      {post.category && <>{post.category.name} · </>}
       <time dateTime={new Date(post.publishedAt).toISOString()}>
         {formatDate(post.publishedAt)}
       </time>
@@ -21,24 +22,27 @@ function Tags({ tags }) {
   return (
     <div className="flex flex-wrap gap-2">
       {tags.slice(0, 3).map((tag) => (
-        <TagChip key={tag} tag={tag} linked={false} />
+        <TagChip key={tag.slug} tag={tag} linked={false} />
       ))}
     </div>
   );
 }
 
-/** The whole card is one link. */
-export default function PostCard({ post }) {
+/**
+ * The whole card is one link. `heading` is the title element: h3 under a section
+ * heading, h2 on listing pages where the page h1 is the only heading above it.
+ */
+export default function PostCard({ post, heading: Heading = "h3" }) {
   return (
     <Link
-      href={`/posts/${post.slug}`}
+      href={postPath(post.slug)}
       className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--surface)] transition-colors hover:border-[var(--signal)]"
     >
       {post.coverUrl && (
         <div className="relative aspect-video overflow-hidden border-b border-[var(--line)]">
           <Image
             src={post.coverUrl}
-            alt=""
+            alt={post.coverAlt}
             fill
             sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
             className="object-cover"
@@ -47,9 +51,9 @@ export default function PostCard({ post }) {
       )}
       <div className="flex flex-1 flex-col gap-4 p-7">
         <Tags tags={post.tags} />
-        <h3 className="font-display text-xl font-medium text-[var(--ink)] transition-colors group-hover:text-[var(--signal)]">
+        <Heading className="font-display text-xl font-medium text-[var(--ink)] transition-colors group-hover:text-[var(--signal)]">
           {post.title}
-        </h3>
+        </Heading>
         {post.excerpt && (
           <p className="line-clamp-3 text-sm leading-relaxed text-[var(--slate)]">
             {post.excerpt}
@@ -67,14 +71,14 @@ export default function PostCard({ post }) {
 export function FeatureCard({ post }) {
   return (
     <Link
-      href={`/posts/${post.slug}`}
+      href={postPath(post.slug)}
       className="group grid overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--surface)] transition-colors hover:border-[var(--signal)] md:grid-cols-2"
     >
       {post.coverUrl && (
         <div className="relative aspect-video overflow-hidden border-b border-[var(--line)] md:aspect-auto md:min-h-80 md:border-b-0 md:border-r">
           <Image
             src={post.coverUrl}
-            alt=""
+            alt={post.coverAlt}
             fill
             priority
             sizes="(min-width: 768px) 560px, 100vw"
@@ -87,7 +91,7 @@ export function FeatureCard({ post }) {
           post.coverUrl ? "" : "md:col-span-2"
         }`}
       >
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--signal)]">
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--slate)]">
           Latest post
         </p>
         <h2 className="font-display text-3xl font-semibold tracking-tight text-[var(--ink)] transition-colors group-hover:text-[var(--signal)] md:text-4xl">

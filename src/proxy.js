@@ -1,28 +1,42 @@
 // Next.js 16 request proxy (replaces middleware.js)
 import { auth } from "@/lib/auth";
-import { COMING_SOON } from "@/lib/coming-soon";
+import { isSiteLive } from "@/lib/site-status";
 import { NextResponse } from "next/server";
 
 // The request Auth.js hands over has lost the Next.js basePath, so add it back.
-const LOGIN_PATH = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/login`;
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+const LOGIN_PATH = "/admin/login";
+const SSO_PATH = "/admin/sso";
 
 const adminProxy = auth((req) => {
-  if (!req.auth) {
-    return NextResponse.redirect(new URL(LOGIN_PATH, req.nextUrl.origin));
-  }
+  // Depending on the wrapper, the path may or may not still carry the base path.
+  const onLoginPage = req.nextUrl.pathname.endsWith(LOGIN_PATH);
+  // Signing in through the main site happens there, so it needs no blog session either.
+  const onMainSitePage = req.nextUrl.pathname.endsWith(SSO_PATH);
+  const to = (path) =>
+    NextResponse.redirect(new URL(`${BASE_PATH}${path}`, req.nextUrl.origin));
+
+  // The cookie is only a first filter here; pages and handlers check the user
+  // against the database (src/lib/authz.js).
+  // (No redirect away from the sign-in page for a signed-in visitor: a disabled
+  // account still has a cookie, and would bounce between the two pages forever.)
+  if (!req.auth && !onLoginPage && !onMainSitePage) return to(LOGIN_PATH);
 });
 
-// Still reachable while the blog is closed, so the owner can sign in and write.
-const OPEN_WHILE_COMING_SOON = ["/login", "/coming-soon"];
+// Still reachable while the blog is closed. /admin (with the sign-in page) is handled
+// above; a draft preview checks the signed-in user itself.
+const isOpenWhileComingSoon = (pathname) =>
+  pathname === "/coming-soon" || pathname.startsWith("/preview/");
 
-export default function proxy(req, event) {
+export default async function proxy(req, event) {
   const { pathname } = req.nextUrl;
 
   if (pathname === "/admin" || pathname.startsWith("/admin/")) {
     return adminProxy(req, event);
   }
 
-  if (COMING_SOON && !OPEN_WHILE_COMING_SOON.includes(pathname)) {
+  // The "Site live" switch (admin → Site); checked at most every 10 minutes per server.
+  if (!isOpenWhileComingSoon(pathname) && !(await isSiteLive())) {
     // A rewrite, not a redirect: the address stays, and it works again at launch.
     const url = req.nextUrl.clone();
     url.pathname = "/coming-soon";

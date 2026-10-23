@@ -1,20 +1,22 @@
-import { COMING_SOON } from "@/lib/coming-soon";
-import { requireAdmin } from "@/lib/require-admin";
-import { createPost } from "@/services/posts/actions";
-import { getLatestPosts } from "@/services/posts/queries";
+import { canSetStatus } from "@/lib/authz";
+import { isSiteLive } from "@/lib/site-status";
+import { requireApiUser } from "@/lib/require-admin";
+import { createPost, PostError } from "@/services/posts/actions";
+import { getPostsForMainSite } from "@/services/posts/queries";
 import { parsePostInput } from "@/services/posts/validation";
 import { NextResponse } from "next/server";
 
 const DEFAULT_LIMIT = 6;
 const MAX_LIMIT = 12;
 
-function badRequest(error) {
-  return NextResponse.json({ error }, { status: 400 });
+function fail(status, error) {
+  return NextResponse.json({ error }, { status });
 }
 
 /**
- * Public: newest published posts for the main site's "Latest writing" section.
- * The response shape is a contract with the main site — see docs/design-brief.md §8.
+ * Public: newest posts for the main site's "Latest writing" section.
+ * Only posts with "Show on main site" switched on are returned.
+ * The response shape is a contract with the main site — see docs/main-site-api.md.
  */
 export async function GET(request) {
   const raw = new URL(request.url).searchParams.get("limit");
@@ -28,8 +30,8 @@ export async function GET(request) {
       : DEFAULT_LIMIT;
 
   try {
-    // Nothing to link to while the blog shows the "coming soon" page.
-    const posts = COMING_SOON ? [] : await getLatestPosts(limit);
+    // Nothing to link to while the blog shows the under-development page.
+    const posts = (await isSiteLive()) ? await getPostsForMainSite(limit) : [];
 
     return NextResponse.json(
       { posts },
@@ -42,42 +44,37 @@ export async function GET(request) {
     );
   } catch (error) {
     console.error("Latest posts error:", error);
-    return NextResponse.json(
-      { error: "Failed to load posts" },
-      { status: 500 },
-    );
+    return fail(500, "Failed to load posts");
   }
 }
 
 export async function POST(request) {
-  const { response } = await requireAdmin();
+  const { user, response } = await requireApiUser();
   if (response) return response;
 
   let body;
   try {
     body = await request.json();
   } catch {
-    return badRequest("Invalid JSON body");
+    return fail(400, "Invalid JSON body");
   }
 
   const { data, error } = parsePostInput(body);
-  if (error) return badRequest(error);
+  if (error) return fail(400, error);
+  if (!canSetStatus(user, data.status)) {
+    return fail(403, "Only an admin can publish");
+  }
 
   try {
-    const post = await createPost(data);
+    const post = await createPost(data, user);
     return NextResponse.json({ post }, { status: 201 });
   } catch (error) {
+    if (error instanceof PostError) return fail(error.status, error.message);
     if (error?.code === "P2002") {
-      return NextResponse.json(
-        { error: "A post with this slug already exists" },
-        { status: 409 },
-      );
+      return fail(409, "A post with this slug already exists");
     }
 
     console.error("Post creation error:", error);
-    return NextResponse.json(
-      { error: "Failed to create post" },
-      { status: 500 },
-    );
+    return fail(500, "Failed to create post");
   }
 }

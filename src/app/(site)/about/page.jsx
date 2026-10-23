@@ -30,7 +30,7 @@ export default function AboutPage() {
           Rasel Rana
         </h1>
         <p
-          className="rise mt-5 font-mono text-xs uppercase tracking-[0.2em] text-[var(--signal)]"
+          className="rise mt-5 font-mono text-xs uppercase tracking-[0.2em] text-[var(--slate)]"
           style={{ "--delay": "160ms" }}
         >
           Manager (Technical), BTCL

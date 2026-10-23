@@ -14,7 +14,8 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-// Shown for every public address while COMING_SOON is on (see src/proxy.js).
+// Shown for every public address while the "Site live" switch is off (admin → Site;
+// src/lib/site-status.js, rewrite in src/proxy.js).
 // No menu or footer on purpose: their links lead to pages that are not open yet.
 export default function ComingSoonPage() {
   return (
@@ -24,10 +25,10 @@ export default function ComingSoonPage() {
           <span aria-hidden className="h-px w-10 bg-[var(--signal)]" />
           Blog
           <span aria-hidden>·</span>
-          <span className="flex items-center gap-2 text-[var(--signal)]">
+          <span className="flex items-center gap-2">
             <span
               aria-hidden
-              className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--pulse)]"
+              className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--signal)]"
             />
             In preparation
           </span>

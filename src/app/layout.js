@@ -1,7 +1,8 @@
 import { SITE_URL } from "@/lib/posts";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "next-themes";
-import { plexMono, plexSans, spaceGrotesk } from "./fonts";
+import { plexMono, poppins } from "./fonts";
 import "./globals.css";
 
 const description =
@@ -20,7 +21,10 @@ export const metadata = {
     url: "/blog",
     siteName: "Rasel Rana",
     type: "website",
+    // Generated in the brand (src/app/api/og); pages with their own picture override it.
+    images: [{ url: "/blog/api/og", width: 1200, height: 630, alt: "Rasel Rana — Blog" }],
   },
+  twitter: { card: "summary_large_image" },
   // Hidden from search engines until BLOG_INDEXABLE=true is set at launch.
   robots:
     process.env.BLOG_INDEXABLE === "true"
@@ -33,14 +37,16 @@ export default function RootLayout({ children }) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${spaceGrotesk.variable} ${plexSans.variable} ${plexMono.variable}`}
+      className={`${poppins.variable} ${plexMono.variable}`}
     >
       <body className="bg-[var(--paper)] font-body text-[var(--ink)]">
         {/* Same settings and storage key as the main site, so the chosen theme carries over. */}
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
         </ThemeProvider>
+        {/* Vercel: visitor counts and real-visitor page speed. Both do nothing locally. */}
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

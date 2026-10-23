@@ -1,12 +1,18 @@
 import Pagination from "@/components/blog/Pagination";
-import PostCard, { FeatureCard } from "@/components/blog/PostCard";
+import { FeatureCard } from "@/components/blog/PostCard";
+import PostRow from "@/components/blog/PostRow";
 import SearchForm from "@/components/blog/SearchForm";
 import TagChip from "@/components/blog/TagChip";
-import { container, pageHeading, pageLabel, sectionHeading } from "@/lib/ui";
-import { getPublishedPosts, getTagCounts } from "@/services/posts/queries";
+import TypeIndex from "@/components/blog/TypeIndex";
+import { container, pageHeading, sectionHeading } from "@/lib/ui";
+import {
+  getContentTypeCounts,
+  getPublishedPosts,
+  getTagCounts,
+} from "@/services/posts/queries";
 import Link from "next/link";
 
-const MAX_TOPIC_CHIPS = 12;
+const MAX_TOPIC_CHIPS = 8;
 
 function parsePage(value) {
   const page = Number(value);
@@ -18,9 +24,10 @@ export default async function BlogHome({ searchParams }) {
   const q = typeof params.q === "string" ? params.q.trim().slice(0, 80) : "";
   const page = parsePage(params.page);
 
-  const [{ posts, total, totalPages }, topics] = await Promise.all([
+  const [{ posts, total, totalPages }, topics, typeCounts] = await Promise.all([
     getPublishedPosts({ page, q }),
     getTagCounts(),
+    getContentTypeCounts(),
   ]);
 
   // The newest post gets the large card, but only on the plain first page.
@@ -37,43 +44,47 @@ export default async function BlogHome({ searchParams }) {
 
   return (
     <>
-      <section className={`${container} py-16 md:py-20`}>
-        <p className={`${pageLabel} rise`}>
-          <span aria-hidden className="h-px w-10 bg-[var(--signal)]" />
-          Blog
-        </p>
-        <h1
-          className={`${pageHeading} rise mt-6 max-w-4xl`}
-          style={{ "--delay": "80ms" }}
-        >
-          Notes on telecom networks, power and engineering.
-        </h1>
-        <p
-          className="rise mt-6 max-w-2xl text-lg leading-relaxed text-[var(--slate)]"
-          style={{ "--delay": "160ms" }}
-        >
-          Practical writing from day-to-day work on telecommunications
-          infrastructure and the electrical systems behind it.
-        </p>
+      {/* Intro and search beside the way in by need (TypeIndex); stacked on phones. */}
+      <section
+        className={`${container} grid gap-12 py-14 md:py-16 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-16`}
+      >
+        <div>
+          <h1 className={`${pageHeading} rise max-w-4xl`}>
+            Notes on telecom networks, power and engineering.
+          </h1>
+          <p
+            className="rise mt-6 max-w-2xl text-base leading-relaxed text-[var(--slate)] md:text-xl"
+            style={{ "--delay": "80ms" }}
+          >
+            Practical writing from day-to-day work on telecommunications
+            infrastructure and the electrical systems behind it.
+          </p>
 
-        <div className="mt-10 space-y-6">
-          <SearchForm defaultValue={q} />
-          {topics.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2">
-              {topics.slice(0, MAX_TOPIC_CHIPS).map(({ tag, count }) => (
-                <TagChip key={tag} tag={tag} count={count} />
-              ))}
-              {topics.length > MAX_TOPIC_CHIPS && (
-                <Link
-                  href="/tags"
-                  className="px-2 font-mono text-xs text-[var(--signal)] underline underline-offset-4"
-                >
-                  All topics
-                </Link>
-              )}
-            </div>
-          )}
+          <div className="mt-10 space-y-6">
+            <SearchForm defaultValue={q} />
+            {topics.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
+                {topics.slice(0, MAX_TOPIC_CHIPS).map((tag) => (
+                  <TagChip key={tag.slug} tag={tag} count={tag.count} />
+                ))}
+                {topics.length > MAX_TOPIC_CHIPS && (
+                  <Link
+                    href="/tags"
+                    className="px-2 font-mono text-xs text-[var(--signal)] underline underline-offset-4"
+                  >
+                    All topics
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
         </div>
+
+        {!q && (
+          <div className="rise" style={{ "--delay": "240ms" }}>
+            <TypeIndex counts={typeCounts} />
+          </div>
+        )}
       </section>
 
       <section className="border-t border-[var(--line)]">
@@ -102,15 +113,15 @@ export default async function BlogHome({ searchParams }) {
             <>
               {feature && <FeatureCard post={feature} />}
               {rest.length > 0 && (
-                <div
-                  className={`grid gap-6 sm:grid-cols-2 lg:grid-cols-3 ${
-                    feature ? "mt-6" : ""
-                  }`}
-                >
+                <ul className={feature ? "mt-10" : ""}>
                   {rest.map((post) => (
-                    <PostCard key={post.slug} post={post} />
+                    <PostRow
+                      key={post.slug}
+                      post={post}
+                      heading={q ? "h3" : "h2"}
+                    />
                   ))}
-                </div>
+                </ul>
               )}
             </>
           )}
