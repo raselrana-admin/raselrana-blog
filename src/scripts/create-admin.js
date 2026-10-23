@@ -40,6 +40,14 @@ async function main() {
   const passwordHash = await bcrypt.hash(plainPassword, 12);
 
   // An existing account keeps its username (it is part of the author page address).
+  // This script never grants SUPER_ADMIN, and never takes it away either: that role
+  // comes only from signing in through the main site (docs/blog-admin-handover.md).
+  const existing = await prisma.user.findUnique({ where: { email }, select: { role: true } });
+  if (existing?.role === "SUPER_ADMIN") {
+    throw new Error(
+      `${email} is the super admin, who signs in through raselrana.com.bd. Use another ADMIN_EMAIL for a blog-only admin.`,
+    );
+  }
   const user = await prisma.user.upsert({
     where: { email },
     update: { passwordHash, name, role: "ADMIN", isActive: true },

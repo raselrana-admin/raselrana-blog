@@ -10,7 +10,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// SUPER_ADMIN is given only by signing in through the main site's dashboard
+// (docs/blog-admin-handover.md); nothing in the blog sets it.
 enum Role {
+  SUPER_ADMIN
   ADMIN
   AUTHOR
 }

@@ -131,8 +131,12 @@ export async function changePassword(userId, input) {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { passwordHash: true },
+    select: { passwordHash: true, role: true },
   });
+  // The super admin signs in only through the main site (docs/blog-admin-handover.md).
+  if (user?.role === "SUPER_ADMIN") {
+    throw new ActionError("This account signs in through raselrana.com.bd and has no blog password.");
+  }
   if (!user || !(await bcrypt.compare(current, user.passwordHash))) {
     throw new ActionError("The current password is not correct.");
   }

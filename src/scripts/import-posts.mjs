@@ -128,7 +128,7 @@ async function findAuthor() {
   const user =
     (email && (await prisma.user.findUnique({ where: { email }, select: { id: true, name: true } }))) ||
     (await prisma.user.findFirst({
-      where: { role: "ADMIN", isActive: true },
+      where: { role: { in: ["SUPER_ADMIN", "ADMIN"] }, isActive: true },
       orderBy: { createdAt: "asc" },
       select: { id: true, name: true },
     }));
