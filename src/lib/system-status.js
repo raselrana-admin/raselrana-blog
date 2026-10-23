@@ -7,7 +7,8 @@ import { getSiteStatus } from "./site-status";
  * Server only. Live checks of everything the blog depends on, for the admin's
  * System page and the summary on the Overview. Each check runs in parallel with a
  * timeout and never throws; it returns
- * `{ id, name, state: "ok" | "warn" | "error", summary, detail? }`.
+ * `{ id, name, state: "ok" | "warn" | "error", summary, detail?, ms? }` (`ms`: how long
+ * the service took to answer).
  * Nothing secret is returned: settings are reported as set or missing.
  */
 
@@ -34,11 +35,7 @@ async function checkDatabase() {
   const base = { id: "database", name: "Database (MongoDB Atlas)" };
   try {
     const { ms } = await timed(() => prisma.$runCommandRaw({ ping: 1 }));
-    return {
-      ...base,
-      state: ms > 1500 ? "warn" : "ok",
-      summary: ms > 1500 ? `Connected, but slow (${ms} ms)` : `Connected (${ms} ms)`,
-    };
+    return { ...base, state: ms > 1500 ? "warn" : "ok", summary: ms > 1500 ? "Connected, but slow" : "Connected", ms };
   } catch (error) {
     return { ...base, state: "error", summary: "Cannot reach the database", detail: error.message };
   }
@@ -54,7 +51,7 @@ async function checkCloudinary() {
     // Imported here: src/lib/cloudinary.js throws on import when settings are missing.
     const { default: cloudinary } = await import("./cloudinary");
     const { ms } = await timed(() => cloudinary.api.ping());
-    return { ...base, state: "ok", summary: `Connected (${ms} ms)` };
+    return { ...base, state: "ok", summary: "Connected", ms };
   } catch (error) {
     const message = error?.error?.message || error?.message || "Unknown error";
     return { ...base, state: "error", summary: "Cloudinary refused the settings", detail: message };
@@ -68,14 +65,14 @@ async function checkEmail() {
     return {
       ...base,
       state: "warn",
-      summary: "Not configured: switching the site sends no email",
+      summary: "Not set up: switching the site sends no email",
       detail: `Missing: ${unset.join(", ")}`,
     };
   }
   try {
     // Called directly rather than through the resend package, which logs every
     // refused request as an error, including the expected one below.
-    const { value: res } = await timed(() =>
+    const { value: res, ms } = await timed(() =>
       fetch("https://api.resend.com/domains", {
         headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}` },
         cache: "no-store",
@@ -92,6 +89,7 @@ async function checkEmail() {
         state: "ok",
         summary: "API key accepted",
         detail: `Sends from ${sender}. Use "Send test email" to confirm delivery.`,
+        ms,
       };
     }
     return { ...base, state: "error", summary: "Resend refused the API key", detail: value.error.message };
@@ -112,7 +110,7 @@ async function checkMainSite() {
       fetch(new URL("/api/admin/session", url), { cache: "no-store" }),
     );
     if (res.status === 401) {
-      return { ...base, state: "ok", summary: `Website reachable (${ms} ms)`, detail: url };
+      return { ...base, state: "ok", summary: "Website reachable", detail: url, ms };
     }
     return {
       ...base,

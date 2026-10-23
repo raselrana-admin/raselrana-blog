@@ -142,3 +142,14 @@ model SiteStatusChange {
   @@index([changedAt])
   @@map("site_status_changes")
 }
+
+// The message visitors see while the site is switched off (admin → Site). One
+// document, id "under-development"; empty text means the standard wording.
+model SiteMessage {
+  id        String   @id @map("_id")
+  text      String
+  updatedAt DateTime @updatedAt
+  userName  String
+
+  @@map("site_messages")
+}

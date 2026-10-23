@@ -3,6 +3,7 @@
 import { buildChecklist } from "@/components/admin/editor/checklist";
 import MarkdownEditor from "@/components/admin/editor/MarkdownEditor";
 import StatusBadge from "@/components/admin/StatusBadge";
+import { useToast } from "@/components/admin/Toast";
 import ImageUploader from "@/components/media/ImageUploader";
 import Markdown from "@/components/mdx/Markdown";
 import { cloudinaryUrl } from "@/lib/cloudinary-loader";
@@ -28,6 +29,14 @@ const MAX_SEO_TITLE = 60;
 const MAX_SEO_DESCRIPTION = 160;
 const MAX_RELATED = 4;
 const AUTOSAVE_DELAY = 3000;
+
+// The pop-up after a manual save, by the status the post now has.
+const SAVED_TOAST = {
+  DRAFT: () => "Draft saved",
+  SCHEDULED: () => "Post scheduled",
+  PUBLISHED: (wasPublic) => (wasPublic ? "Post updated" : "Post published"),
+  ARCHIVED: () => "Post archived",
+};
 
 const toolButton =
   "rounded-md border border-[var(--line)] bg-[var(--surface)] px-2.5 py-1 text-xs font-medium text-[var(--ink)] transition-colors hover:border-[var(--signal)] hover:text-[var(--signal)]";
@@ -115,6 +124,7 @@ export default function PostEditor({
   const [view, setView] = useState("write"); // phones: write | preview | settings
   const [settingsOpen, setSettingsOpen] = useState(true); // wide screens
   const [saving, setSaving] = useState(false);
+  const toast = useToast();
   const [saveState, setSaveState] = useState(""); // "Saved at 18:42" etc.
   const [error, setError] = useState(null);
   const [checklist, setChecklist] = useState(null); // { errors, warnings, target }
@@ -164,6 +174,7 @@ export default function PostEditor({
         : tags;
     const sent = { ...fields, tags: allTags };
     const sentJson = JSON.stringify(sent);
+    const wasPublic = status === "PUBLISHED";
 
     setSaving(true);
     setSaveState("Saving…");
@@ -223,6 +234,8 @@ export default function PostEditor({
         setSavedJson(JSON.stringify(synced));
       }
       setSaveState(`Saved at ${clock()}`);
+      // A pop-up for deliberate saves only; autosave just updates the line above.
+      if (!auto) toast(SAVED_TOAST[saved.status]?.(wasPublic) ?? "Saved");
       return true;
     } catch (err) {
       console.error("Save error:", err);
