@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- "Tools" in the navbar: a menu of the available tools from `raselrana.com.bd/tools` (plain link without JavaScript or when the tools API is down), also in the phone menu and the footer; a Tools card on the System page.
+
 ## 1.1.0 — 2026-10-24
 
 - Admin matches the website dashboard: a top bar (page title, View site, theme, sign-out, an "Under development" pill), pop-up confirmations after saving, and the System page as one card per check with a "Check again" button.

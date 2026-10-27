@@ -6,17 +6,20 @@ import { useState } from "react";
 import { BarsIcon } from "./header-icons";
 import MobileMenu from "./MobileMenu";
 import ThemeToggle from "./ThemeToggle";
+import ToolsMenu from "./ToolsMenu";
 import { useIsMounted } from "@/lib/use-is-mounted";
 
 /**
  * The right side of the header (docs/brand-guide.md §6): the blog's links and
  * the theme button on wide screens, the theme and menu buttons on phones.
- * `links` are [{ label, href }], written without /blog.
+ * `links` are [{ label, href, zone? }], written without /blog; a `zone` link (Tools)
+ * belongs to another app and is drawn by ToolsMenu with plain <a> links.
+ * `tools` is the menu from the tools API (src/lib/tools.js; [] when it is down).
  *
  * Until JavaScript runs the menu button is a plain link to the footer, which
  * lists the same pages, so the phone menu still leads somewhere without it.
  */
-export default function HeaderControls({ links }) {
+export default function HeaderControls({ links, tools = [] }) {
   const mounted = useIsMounted();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -32,6 +35,13 @@ export default function HeaderControls({ links }) {
       <nav aria-label="Blog" className="hidden md:block">
         <ul className="flex items-center gap-7">
           {links.map((link) => {
+            if (link.zone) {
+              return (
+                <li key={link.href}>
+                  <ToolsMenu menu={tools} />
+                </li>
+              );
+            }
             const active = pathname === link.href;
             return (
               <li key={link.href}>
@@ -71,7 +81,7 @@ export default function HeaderControls({ links }) {
         )}
       </div>
 
-      {open && <MobileMenu links={links} pathname={pathname} onClose={() => setOpen(false)} />}
+      {open && <MobileMenu links={links} tools={tools} pathname={pathname} onClose={() => setOpen(false)} />}
     </div>
   );
 }

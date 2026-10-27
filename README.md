@@ -37,6 +37,9 @@ Look and accessibility follow [docs/brand-guide.md](docs/brand-guide.md); struct
 - **Site live switch** (super admin): turns the public blog on or off without a redeploy, after a warning; every flip is emailed and listed. While off, visitors get an under-development page (status 503) with your own message, and signed-in users still see the blog with a banner.
 - Dashboard like the website's: a top bar (View site, theme, sign-out, an "Under development" pill) and pop-up confirmations after saving.
 
+**Tools**
+- "Tools" in the header: a menu of the available calculators from the tools app (`raselrana.com.bd/tools`), read from its public API; a plain link when it is unreachable ([docs/tools-handover.md](docs/tools-handover.md)).
+
 **For the main site**
 - `GET /blog/api/posts?limit=3` feeds its "Latest writing" section ([docs/main-site-api.md](docs/main-site-api.md)).
 
