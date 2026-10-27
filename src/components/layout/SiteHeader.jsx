@@ -1,4 +1,5 @@
 import BrandLogo from "@/components/brand/BrandLogo";
+import { toolsMenu } from "@/lib/tools";
 import Link from "next/link";
 import HeaderControls from "./HeaderControls";
 import MainSiteLink from "./MainSiteLink";
@@ -6,10 +7,15 @@ import MainSiteLink from "./MainSiteLink";
 const links = [
   { href: "/", label: "Posts" },
   { href: "/tags", label: "Topics" },
+  // Another app (raselrana.com.bd/tools): a plain <a>, never next/link, so no /blog in front
+  { href: "/tools", label: "Tools", zone: true },
   { href: "/about", label: "About the author" },
 ];
 
-export default function SiteHeader() {
+export default async function SiteHeader() {
+  // The tools API, cached for an hour; [] when it is down (plain "Tools" link then).
+  const tools = await toolsMenu();
+
   return (
     // Same height and look as the main site's bar (docs/brand-guide.md §6), so it does not jump between the two.
     <header className="sticky top-0 z-50 h-16 border-b border-[var(--line)] bg-[var(--paper)]/90 backdrop-blur-sm">
@@ -37,7 +43,7 @@ export default function SiteHeader() {
           </Link>
         </div>
 
-        <HeaderControls links={links} />
+        <HeaderControls links={links} tools={tools} />
       </div>
     </header>
   );

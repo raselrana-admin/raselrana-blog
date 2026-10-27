@@ -19,9 +19,10 @@ const CONTACT_EMAIL = "contact@raselrana.com.bd";
  * this fixed panel position itself against the header instead of the screen.
  * useDialogFocus moves focus in, keeps Tab inside, closes on Escape and
  * returns focus to the menu button; the header also closes it on a route change.
- * `links` are the blog's own links: [{ label, href }].
+ * `links` are the blog's links: [{ label, href, zone? }]; a `zone` link (Tools) is another
+ * app, so a plain <a>. `tools` (from the tools API) adds a Tools section of plain links.
  */
-export default function MobileMenu({ links, pathname, onClose }) {
+export default function MobileMenu({ links, tools = [], pathname, onClose }) {
   const mounted = useIsMounted();
   const panelRef = useRef(null);
   const { resolvedTheme, setTheme } = useTheme();
@@ -75,6 +76,15 @@ export default function MobileMenu({ links, pathname, onClose }) {
           <SignalArcs />
         </div>
         {links.map((link, i) => {
+          if (link.zone) {
+            return (
+              <MainSiteLink key={link.href} href={link.href} className="hc-link">
+                <span className="hc-num" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+                <span className="flex-1">{link.label}</span>
+                <ChevronIcon />
+              </MainSiteLink>
+            );
+          }
           const active = pathname === link.href;
           return (
             <Link
@@ -90,6 +100,24 @@ export default function MobileMenu({ links, pathname, onClose }) {
             </Link>
           );
         })}
+
+        {tools.length > 0 && (
+          <div className="mt-4 border-t border-[var(--hc-border)] pt-4">
+            <p className="hc-eyebrow px-3.5 pb-1.5">Tools</p>
+            <ul>
+              {tools.flatMap((category) =>
+                category.items.map((tool) => (
+                  <li key={tool.url}>
+                    <a href={tool.url} className="hc-link text-base font-medium">
+                      <span className="flex-1">{tool.title}</span>
+                      <ChevronIcon />
+                    </a>
+                  </li>
+                )),
+              )}
+            </ul>
+          </div>
+        )}
       </nav>
 
       <div className="hc-foot">

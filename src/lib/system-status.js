@@ -2,6 +2,7 @@ import nextPackage from "next/package.json";
 import appPackage from "../../package.json";
 import { prisma } from "./prisma";
 import { getSiteStatus } from "./site-status";
+import { toolsApiUrl } from "./tools";
 
 /**
  * Server only. Live checks of everything the blog depends on, for the admin's
@@ -126,6 +127,24 @@ async function checkMainSite() {
   }
 }
 
+// The tools app (raselrana.com.bd/tools) feeds the header's Tools menu. Informational:
+// the blog keeps working without it (a plain "Tools" link), so a failure is only "Check".
+async function checkTools() {
+  const base = { id: "tools", name: "Tools menu (raselrana.com.bd/tools)" };
+  const url = toolsApiUrl();
+  try {
+    const { value: res, ms } = await timed(() => fetch(url, { cache: "no-store" }));
+    const data = res.ok ? await res.json().catch(() => null) : null;
+    if (data?.version !== 1 || !Array.isArray(data.tools)) {
+      return { ...base, state: "warn", summary: `Unexpected answer (${res.status}): the header shows a plain Tools link`, detail: url, ms };
+    }
+    const available = data.tools.filter((tool) => tool.available === true).length;
+    return { ...base, state: "ok", summary: `${available} of ${data.tools.length} tools available`, detail: url, ms };
+  } catch (error) {
+    return { ...base, state: "warn", summary: "Cannot reach the tools app: the header shows a plain Tools link", detail: `${url}: ${error.message}` };
+  }
+}
+
 function checkAuth() {
   const base = { id: "auth", name: "Admin sign-in settings (Auth.js)" };
   const unset = missing(["AUTH_SECRET", "AUTH_URL"]);
@@ -164,6 +183,7 @@ export async function runSystemChecks() {
     checkCloudinary(),
     checkEmail(),
     checkMainSite(),
+    checkTools(),
     Promise.resolve(checkAuth()),
     checkSite(),
   ]);
