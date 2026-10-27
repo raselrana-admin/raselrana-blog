@@ -12,6 +12,8 @@ const mainSiteLinks = [
   { href: "/about", label: "About" },
   { href: "/experience", label: "Experience" },
   { href: "/achievements", label: "Achievements" },
+  // The tools app (raselrana.com.bd/tools), another zone like the main site
+  { href: "/tools", label: "Tools" },
   { href: "/contact", label: "Contact" },
 ];
 
