@@ -3,6 +3,7 @@
 ## Unreleased
 
 - "Tools" in the navbar: a menu of the available tools from `raselrana.com.bd/tools` (plain link without JavaScript or when the tools API is down), also in the phone menu and the footer; a Tools card on the System page.
+- The category row lists only categories (the Troubleshooting shortcut is gone; it stays on the home page) and no longer shows scroll arrows.
 
 ## 1.1.0 — 2026-10-24
 

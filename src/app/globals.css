@@ -735,3 +735,12 @@ dialog::backdrop {
     transition: none;
   }
 }
+
+/* Sideways-scrolling rows (the category bar): no visible scrollbar or arrow buttons */
+@utility no-scrollbar {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
