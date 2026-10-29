@@ -1,4 +1,3 @@
-import { SignalArcs } from "@/components/layout/header-icons";
 import { contentTypeByValue } from "@/lib/content-types";
 import { typePath } from "@/lib/posts";
 import Link from "next/link";
@@ -21,12 +20,9 @@ export default function TypeIndex({ counts }) {
       aria-labelledby="type-index-title"
       className="on-inverse rounded-2xl bg-[var(--inverse)] p-7 text-[var(--on-inverse)]"
     >
-      <div className="flex items-start justify-between gap-4">
-        <h2 id="type-index-title" className="font-display text-xl font-semibold tracking-tight">
-          Start from what you need
-        </h2>
-        <SignalArcs />
-      </div>
+      <h2 id="type-index-title" className="font-display text-xl font-semibold tracking-tight">
+        Start from what you need
+      </h2>
       <ul className="mt-5">
         {types.map((type) => {
           const count = counts.get(type.value);
