@@ -24,12 +24,13 @@ Look and accessibility follow [docs/brand-guide.md](docs/brand-guide.md); struct
 **For readers**
 - Blog home with search, a "Start from what you need" index by post type (Troubleshooting, How-to, Explainer, Comparison), the newest post as a feature, then a dated list.
 - Category, post type, topic and author pages; articles at `/blog/<slug>`, with old addresses redirecting.
-- Post page: table of contents, reading progress, a `#` link on every section, a Copy button on code blocks, share row, previous / next, related posts, author card.
+- Post page: table of contents, reading progress, a `#` link on every section, a Copy button on code blocks, a read count and "Was this helpful?" (like / dislike), share row, previous / next, related posts, author card.
 - Markdown extras: callout boxes, captioned images, photo grids, click-to-play YouTube.
 - Branded link-preview images (`/blog/api/og`), sitemap at `/blog/sitemap.xml`, structured data on articles.
 - Light and dark mode that carries over from the main site; every page readable without JavaScript.
 
 **For the author** (at `/blog/admin`)
+- Reads, likes and dislikes per post (posts list, editor) and in total on the Overview, with a "Most read" list.
 - Posts list with filters; Markdown editor with live preview, autosave, image uploads, a pre-publish checklist and scheduling.
 - Categories, topics (rename, merge) and profile pages; login rate limiting and role-based permissions.
 - **System** page: live checks of the database, Cloudinary, Resend, the website sign-in and the site settings, with a test email; a summary of it on the Overview.
@@ -102,7 +103,7 @@ docs/
   main-site-api.md        the API the main site reads
   blog-admin-handover.md  super-admin sign-in from the main site
   BLOG_ADMIN_SPEC.md      admin and categories build spec, with its progress table
-prisma/schema.prisma  Post, User, Category, Tag, LoginAttempt
+prisma/schema.prisma  Post, User, Category, Tag, LoginAttempt, PostStats, PostVote, site switch
 src/
   app/
     (site)/      public pages: home, article, category, type, topic, author, about, preview

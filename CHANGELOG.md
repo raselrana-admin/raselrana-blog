@@ -3,6 +3,7 @@
 ## Unreleased
 
 - "Tools" in the navbar: a menu of the available tools from `raselrana.com.bd/tools` (plain link without JavaScript or when the tools API is down), also in the phone menu and the footer; a Tools card on the System page.
+- Under every post: the number of reads and "Was this helpful?" with Like / Dislike buttons and their totals (one vote per reader, which can be changed or taken back; works without JavaScript). Every visit counts once the page has been open for 10 seconds. The admin shows reads, likes and dislikes on the Overview (with "Most read"), in the posts list and in the editor.
 - The category row lists only categories (the Troubleshooting shortcut is gone; it stays on the home page) and no longer shows scroll arrows.
 
 ## 1.1.0 — 2026-10-24

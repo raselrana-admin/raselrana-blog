@@ -23,9 +23,10 @@ const ARTICLE_ID = "post-article";
 /**
  * A post as readers see it: header, featured image, body with table of contents,
  * share row. Used by the public post page and by the draft preview, so both always
- * look the same. `post` needs `category` and `tags` loaded.
+ * look the same. `post` needs `category` and `tags` loaded. `feedback` (reads and
+ * "Was this helpful?") is passed by the public page only, so a preview counts nothing.
  */
-export default function PostArticle({ post }) {
+export default function PostArticle({ post, feedback = null }) {
   const published = postDate(post);
   const type = contentTypeByValue(post.contentType);
   const cover = coverOf(post);
@@ -135,7 +136,8 @@ export default function PostArticle({ post }) {
               <Markdown>{post.content}</Markdown>
             </div>
 
-            <div className="mt-12 max-w-[70ch] border-t border-[var(--line)] pt-8">
+            <div className="mt-12 max-w-[70ch] space-y-6 border-t border-[var(--line)] pt-8">
+              {feedback}
               <ShareRow url={postUrl(post.slug)} />
             </div>
           </div>

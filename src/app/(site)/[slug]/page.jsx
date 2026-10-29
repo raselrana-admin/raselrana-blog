@@ -1,10 +1,13 @@
 import AuthorCard from "@/components/blog/AuthorCard";
 import PostArticle from "@/components/blog/PostArticle";
 import PostCard from "@/components/blog/PostCard";
+import PostFeedback from "@/components/blog/PostFeedback";
 import PostNav from "@/components/blog/PostNav";
+import ReadCounter from "@/components/blog/ReadCounter";
 import { cloudinaryUrl } from "@/lib/cloudinary-loader";
 import { BLOG_URL, postDate, postPath, postUrl, SITE_URL } from "@/lib/posts";
 import { cardGrid, container, sectionHeading } from "@/lib/ui";
+import { getPostFeedback, READER_COOKIE } from "@/services/feedback/queries";
 import {
   coverOf,
   getAdjacentPosts,
@@ -12,6 +15,7 @@ import {
   getLivePostBySlug,
   getRelatedPosts,
 } from "@/services/posts/queries";
+import { cookies } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 
 // The article page: /blog/<slug>. Static routes next to this folder (about, tags,
@@ -111,9 +115,11 @@ export default async function PostPage({ params }) {
   const post = await loadPost(slug);
   if (!post) notFound(); // also covers drafts, archived and not-yet-due posts
 
-  const [{ older, newer }, related] = await Promise.all([
+  const readerId = (await cookies()).get(READER_COOKIE)?.value;
+  const [{ older, newer }, related, feedback] = await Promise.all([
     getAdjacentPosts(post),
     getRelatedPosts(post),
+    getPostFeedback(post.id, readerId),
   ]);
 
   return (
@@ -123,7 +129,11 @@ export default async function PostPage({ params }) {
         dangerouslySetInnerHTML={{ __html: articleJsonLd(post) }}
       />
 
-      <PostArticle post={post} />
+      <PostArticle
+        post={post}
+        feedback={<PostFeedback slug={post.slug} initial={feedback} />}
+      />
+      <ReadCounter slug={post.slug} />
 
       <section className="border-t border-[var(--line)]">
         <div className={`${container} space-y-12 py-16 md:py-20`}>
