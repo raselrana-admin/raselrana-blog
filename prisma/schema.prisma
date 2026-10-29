@@ -153,3 +153,35 @@ model SiteMessage {
 
   @@map("site_messages")
 }
+
+// Reader feedback (src/services/feedback/). Kept off Post, so a read never changes
+// the post's updatedAt and old posts need no new field.
+
+// Every visit counts: +1 after the page has been visible for 10 seconds.
+model PostStats {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  postId String @unique @db.ObjectId
+  reads  Int    @default(0)
+
+  @@map("post_stats")
+}
+
+enum VoteValue {
+  LIKE
+  DISLIKE
+}
+
+// "Was this helpful?": one vote per reader per post. readerId is the anonymous
+// blog_reader cookie; nothing else about the reader is stored.
+model PostVote {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  postId    String    @db.ObjectId
+  readerId  String
+  value     VoteValue
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([postId, readerId])
+  @@index([postId, value])
+  @@map("post_votes")
+}

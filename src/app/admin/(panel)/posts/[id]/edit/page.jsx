@@ -1,6 +1,8 @@
 import PostEditor from "@/components/blog/PostEditor";
 import { canEditPost, getCurrentUser } from "@/lib/authz";
+import { feedbackLine } from "@/lib/feedback";
 import { postPath } from "@/lib/posts";
+import { getPostFeedback } from "@/services/feedback/queries";
 import {
   getAllTagNames,
   getCategories,
@@ -17,13 +19,14 @@ export default async function EditPostPage({ params }) {
   const { id } = await params;
   if (!isValidObjectId(id)) notFound();
 
-  const [user, post, categories, tagSuggestions, postOptions] =
+  const [user, post, categories, tagSuggestions, postOptions, feedback] =
     await Promise.all([
       getCurrentUser(),
       getPostById(id),
       getCategories(),
       getAllTagNames(),
       getPostOptions(),
+      getPostFeedback(id),
     ]);
   if (!post || !canEditPost(user, post)) notFound();
   const now = new Date();
@@ -31,9 +34,16 @@ export default async function EditPostPage({ params }) {
   return (
     <>
       <div className="mb-8 flex flex-wrap items-baseline justify-between gap-4">
-        <h1 className="font-display text-4xl font-semibold tracking-tight text-[var(--ink)]">
-          Edit post
-        </h1>
+        <div>
+          <h1 className="font-display text-4xl font-semibold tracking-tight text-[var(--ink)]">
+            Edit post
+          </h1>
+          {post.publishedAt && (
+            <p className="mt-2 font-mono text-xs text-[var(--slate)]">
+              {feedbackLine(feedback)}
+            </p>
+          )}
+        </div>
         {post.status === "PUBLISHED" && (
           <Link
             href={postPath(post.slug)}

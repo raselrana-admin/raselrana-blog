@@ -1,7 +1,9 @@
 import StatusBadge from "@/components/admin/StatusBadge";
 import SystemSummary, { SystemSummaryLoading } from "@/components/admin/SystemSummary";
+import { feedbackLine, formatCount } from "@/lib/feedback";
 import { formatDate, formatDateTime } from "@/lib/posts";
 import { buttonPrimary, metaLine, pageLabel } from "@/lib/ui";
+import { getFeedbackTotals, getMostReadPosts } from "@/services/feedback/queries";
 import {
   getPostCounts,
   getPostsNeedingReview,
@@ -15,19 +17,26 @@ export const metadata = { title: "Overview" };
 
 const REVIEW_AFTER_MONTHS = 12;
 
+/** A total; a link when `href` is given. */
 function CountCard({ label, value, href }) {
-  return (
-    <Link
-      href={href}
-      className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 transition-colors hover:border-[var(--signal)]"
-    >
+  const body = (
+    <>
       <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--slate)]">
         {label}
       </p>
       <p className="mt-2 font-display text-3xl font-semibold text-[var(--ink)]">
-        {value}
+        {formatCount(value)}
       </p>
+    </>
+  );
+  const box = "rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6";
+
+  return href ? (
+    <Link href={href} className={`${box} transition-colors hover:border-[var(--signal)]`}>
+      {body}
     </Link>
+  ) : (
+    <div className={box}>{body}</div>
   );
 }
 
@@ -72,11 +81,13 @@ function PostRows({ posts, detail }) {
 }
 
 export default async function OverviewPage() {
-  const [counts, recent, upcoming, needsReview] = await Promise.all([
+  const [counts, recent, upcoming, needsReview, feedback, mostRead] = await Promise.all([
     getPostCounts(),
     getRecentlyEditedPosts(5),
     getUpcomingScheduledPosts(5),
     getPostsNeedingReview(REVIEW_AFTER_MONTHS),
+    getFeedbackTotals(),
+    getMostReadPosts(5),
   ]);
 
   return (
@@ -110,6 +121,12 @@ export default async function OverviewPage() {
         <CountCard label="Archived" value={counts.ARCHIVED} href="/admin/posts?status=ARCHIVED" />
       </div>
 
+      <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        <CountCard label="Reads" value={feedback.reads} />
+        <CountCard label="Likes" value={feedback.likes} />
+        <CountCard label="Dislikes" value={feedback.dislikes} />
+      </div>
+
       <div className="mt-8 grid gap-6 xl:grid-cols-2">
         <Panel title="Recently edited" empty="No posts yet. Write the first one.">
           {recent.length > 0 && (
@@ -132,6 +149,18 @@ export default async function OverviewPage() {
             />
           )}
         </Panel>
+
+        <div className="xl:col-span-2">
+          <Panel
+            title="Most read"
+            note="Every visit counts once the page has been open for 10 seconds; likes and dislikes come from “Was this helpful?” under each post."
+            empty="No reads yet."
+          >
+            {mostRead.length > 0 && (
+              <PostRows posts={mostRead} detail={(post) => feedbackLine(post.feedback)} />
+            )}
+          </Panel>
+        </div>
 
         <div className="xl:col-span-2">
           <Panel

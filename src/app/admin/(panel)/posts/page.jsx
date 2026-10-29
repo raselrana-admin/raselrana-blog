@@ -2,8 +2,10 @@ import DeletePostButton from "@/components/admin/DeletePostButton";
 import StatusBadge, { STATUS_LABELS } from "@/components/admin/StatusBadge";
 import Pagination from "@/components/blog/Pagination";
 import { CONTENT_TYPES, contentTypeByValue } from "@/lib/content-types";
+import { formatCount } from "@/lib/feedback";
 import { formatDate, formatDateTime, postPath } from "@/lib/posts";
 import { buttonPrimary, buttonSmall, fieldLabel, input } from "@/lib/ui";
+import { feedbackOf, getFeedbackByPost } from "@/services/feedback/queries";
 import { getCategories, getPostsForAdminList } from "@/services/posts/queries";
 import { isValidObjectId } from "@/services/posts/validation";
 import Link from "next/link";
@@ -63,6 +65,7 @@ export default async function PostsListPage({ searchParams }) {
     getCategories(),
   ]);
 
+  const feedback = await getFeedbackByPost(posts.map((post) => post.id));
   const filtered = Object.values(filters).some(Boolean);
 
   const hrefFor = (n) => {
@@ -185,7 +188,7 @@ export default async function PostsListPage({ searchParams }) {
               : "No posts yet. Write the first one."}
           </p>
         ) : (
-          <table className="w-full min-w-[60rem] border-collapse text-sm">
+          <table className="w-full min-w-[66rem] border-collapse text-sm">
             <thead>
               <tr className="border-b border-[var(--line)]">
                 <th className={th}>Title</th>
@@ -193,6 +196,7 @@ export default async function PostsListPage({ searchParams }) {
                 <th className={th}>Type</th>
                 <th className={th}>Status</th>
                 <th className={th}>Published</th>
+                <th className={th}>Readers</th>
                 <th className={th}>Last edited</th>
                 <th className={th}>Actions</th>
               </tr>
@@ -201,6 +205,7 @@ export default async function PostsListPage({ searchParams }) {
               {posts.map((post) => {
                 const neverPublished =
                   post.status === "DRAFT" && !post.publishedAt;
+                const { reads, likes, dislikes } = feedbackOf(feedback, post.id);
                 return (
                   <tr key={post.id} className="align-top">
                     <td className="max-w-xs px-4 py-4">
@@ -226,6 +231,17 @@ export default async function PostsListPage({ searchParams }) {
                     </td>
                     <td className="whitespace-nowrap px-4 py-4 font-mono text-xs text-[var(--slate)]">
                       <PostDate post={post} />
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-4 font-mono text-xs text-[var(--slate)]">
+                      <span className="text-[var(--ink)]">{formatCount(reads)}</span>{" "}
+                      {reads === 1 ? "read" : "reads"}
+                      <br />
+                      <span aria-hidden>
+                        ▲ {formatCount(likes)} · ▼ {formatCount(dislikes)}
+                      </span>
+                      <span className="sr-only">
+                        {likes} likes, {dislikes} dislikes
+                      </span>
                     </td>
                     <td className="whitespace-nowrap px-4 py-4 font-mono text-xs text-[var(--slate)]">
                       {formatDateTime(post.updatedAt)}

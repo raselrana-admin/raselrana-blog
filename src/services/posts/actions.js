@@ -163,6 +163,9 @@ export async function deletePost(id) {
     data: { tags: { set: [] } },
   });
   await prisma.post.delete({ where: { id } });
+  // A never-published draft has no reads or votes, but leave nothing behind.
+  await prisma.postStats.deleteMany({ where: { postId: id } });
+  await prisma.postVote.deleteMany({ where: { postId: id } });
 
   revalidatePosts(existing);
   return true;
