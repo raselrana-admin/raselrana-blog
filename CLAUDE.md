@@ -86,7 +86,7 @@ Links to the main site go through `components/layout/MainSiteLink.jsx`: a plain 
 
 ### Data layer
 
-Prisma only: `src/lib/prisma.js` exports a singleton client, schema in `prisma/schema.prisma` (`Post` → `posts` collection, `User`, `Category`, `Tag`, `LoginAttempt`). Prisma reads `DATABASE_URL`; the Prisma CLI gets it from `.env` via `prisma.config.ts` (`dotenv/config`), not from `.env.local`.
+Prisma only: `src/lib/prisma.js` exports a singleton client, schema in `prisma/schema.prisma` (`Post` → `posts` collection, `User`, `Category`, `Tag`, `LoginAttempt`, `PostStats`, `PostVote`, …). Prisma reads `DATABASE_URL`; the Prisma CLI gets it from `.env` via `prisma.config.ts` (`dotenv/config`), not from `.env.local`.
 
 Every post has a `status` (`DRAFT` / `SCHEDULED` / `PUBLISHED` / `ARCHIVED`), one content type (enum; labels and address slugs in `src/lib/content-types.js`), at most one category, and topics (`Tag` records, many-to-many). The featured image is one JSON field `{ url, publicId, width, height, alt }`.
 
@@ -107,6 +107,15 @@ Old documents may still carry the pre-spec fields (`published`, `coverUrl`, `cov
 Addresses are built by `postPath()`, `tagPath()`, `categoryPath()`, `typePath()` and `authorPath()` in `src/lib/posts.js`; never write them by hand. `revalidatePosts()` uses the same functions.
 
 Pages that read `searchParams` or a dynamic segment are rendered per request, so a scheduled post appears on them the moment its time passes. `/tags` and the sitemap are cached with `revalidate = 300`.
+
+### Reader feedback
+
+Under every article: a read count and "Was this helpful?" with Like / Dislike and their totals (`components/blog/PostFeedback.jsx`), all public; the admin shows the same numbers on the Overview (totals, "Most read"), in a Readers column of the posts list and under the editor's title. Logic in `src/services/feedback/`.
+
+- Reads are `PostStats.reads` (`post_stats`), one row per post, created by an upsert. They are kept off `Post` on purpose: a counter there would change `updatedAt` on every visit. **Every visit counts**: `ReadCounter.jsx` calls the server action `recordRead(slug)` once per page load after the page has been visible for 10 seconds, so bots without JavaScript and instant bounces are not counted. While the site is switched off in production, reads are not recorded.
+- Votes are `PostVote` rows (`post_votes`), unique per post + reader; likes and dislikes are counted from them. The same button again removes the vote, the other one changes it. The reader is the anonymous `blog_reader` cookie (random UUID, httpOnly, `Path=/blog`, one year), set by `votePost` on the first vote; nothing else about the reader is stored.
+- The vote is a `<form>` bound to a server action through `useActionState`, so it works without JavaScript. Both actions are public: they validate with zod, touch only live posts (`livePostWhere()`) and never throw to the reader.
+- `PostArticle` renders feedback only when the public page passes it (`feedback` prop), so `/preview/...` shows no buttons and counts nothing.
 
 ### Editor
 
