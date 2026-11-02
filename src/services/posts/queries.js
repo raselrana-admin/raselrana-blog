@@ -503,6 +503,6 @@ export async function getPostOptions() {
   return prisma.post.findMany({
     where: { status: { not: "ARCHIVED" } },
     orderBy: { updatedAt: "desc" },
-    select: { id: true, title: true },
+    select: { id: true, title: true, slug: true },
   });
 }

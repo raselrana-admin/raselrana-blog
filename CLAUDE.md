@@ -14,7 +14,7 @@ npx prisma db push                  # sync prisma/schema.prisma to MongoDB (no m
 npx prisma generate                 # regenerate the client (also runs on postinstall)
 node src/scripts/create-admin.js    # upsert the admin user from ADMIN_EMAIL / ADMIN_PASSWORD / ADMIN_NAME in .env.local
 npm run seed:categories             # create the launch categories; safe to run again
-npm run import:posts                # import content/seed-posts/*.md (YAML header + Markdown) as DRAFT posts by slug; --dry-run to preview
+npm run import:posts                # import content/seed-posts/*.md (header + Markdown, read by src/lib/post-file.js) as DRAFT posts by slug; --dry-run to preview
 ```
 
 There is no test suite or test runner configured.
@@ -124,6 +124,7 @@ Under every article: a read count and "Was this helpful?" with Like / Dislike an
 - **Autosave** runs only while the post is a draft, 3 seconds after the last change, and never changes the status. The first save of a new post creates it and swaps the address with `history.replaceState`, on purpose without a navigation, so typing is not interrupted. Autosaves do not overwrite field state with the server's answer; manual saves do.
 - Going public (Publish / Schedule / Update) always goes through `goPublic()`, which runs `components/admin/editor/checklist.js` plus the server slug check and shows the checklist dialog; other buttons call `save()` directly.
 - The publish date is typed and shown in Asia/Dhaka time and stored in UTC.
+- **Import .md file** reads the file in the browser with `parsePostFile()` (`src/lib/post-file.js`, also used by `import:posts`, so it stays free of `@/` imports; format in `docs/post-writing-guide.md`) and only sets field state: status never changes, and a post with text asks first, because a draft autosaves over it. The featured image's alt and idea wait in `importedCover`, which is never sent, since an image without a `url` is invalid. A `[PHOTO: …]` placeholder blocks publishing (`checklist.js`).
 - `components/admin/editor/MarkdownEditor.jsx` wraps CodeMirror 6. Its colours come from the CSS tokens, so it follows the theme by itself. The CodeMirror extensions are created once at module level; Ctrl+S reaches React through a DOM event, because the lint rules forbid reading refs while building them.
 - The in-editor preview renders `Markdown.jsx` directly. `/preview/[id]` renders the saved post with `components/blog/PostArticle.jsx`, the same component the public post page uses.
 
