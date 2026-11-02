@@ -15,6 +15,7 @@ import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import prismaPkg from "@prisma/client";
 import { CONTENT_TYPES } from "../lib/content-types.js";
+import { parsePostFile } from "../lib/post-file.js";
 import { readingMinutes, slugify, SLUG_PATTERN } from "../lib/posts.js";
 
 dotenv.config({ path: [".env.local", ".env"], quiet: true });
@@ -32,68 +33,6 @@ const RESERVED_SLUGS = new Set([
   "about", "admin", "api", "author", "category", "coming-soon", "feed", "login",
   "page", "posts", "preview", "search", "sitemap", "tag", "tags", "type",
 ]);
-
-// ---- A small YAML reader for the header these files use ----
-// Supports: `key: value`, quoted strings, `[a, b]` lists, true/false, `# comments`,
-// and one level of nesting (an indented map or a `- item` list under `key:`).
-
-function parseScalar(raw) {
-  const text = raw.trim();
-  const quoted = text.match(/^"((?:[^"\\]|\\.)*)"/);
-  if (quoted) return JSON.parse(`"${quoted[1]}"`);
-  const value = text.replace(/\s+#.*$/, "").trim();
-  if (value.startsWith("[") && value.endsWith("]")) {
-    return value
-      .slice(1, -1)
-      .split(",")
-      .map(parseScalar)
-      .filter((item) => item !== "");
-  }
-  if (value === "true") return true;
-  if (value === "false") return false;
-  return value;
-}
-
-function parseHeader(yaml) {
-  const result = {};
-  let parentKey = null;
-  for (const line of yaml.split(/\r?\n/)) {
-    if (!line.trim() || line.trim().startsWith("#")) continue;
-    const indented = /^\s+/.test(line);
-    if (indented && parentKey) {
-      const item = line.trim().match(/^-\s+(.*)$/);
-      if (item) {
-        if (!Array.isArray(result[parentKey])) result[parentKey] = [];
-        result[parentKey].push(parseScalar(item[1]));
-      } else {
-        const [, key, value] = line.trim().match(/^([\w-]+):\s*(.*)$/) ?? [];
-        if (!key) throw new Error(`Cannot read header line: ${line}`);
-        const parent = result[parentKey];
-        if (!parent || Array.isArray(parent) || typeof parent !== "object") {
-          result[parentKey] = {};
-        }
-        result[parentKey][key] = parseScalar(value);
-      }
-      continue;
-    }
-    const [, key, value] = line.match(/^([\w-]+):\s*(.*)$/) ?? [];
-    if (!key) throw new Error(`Cannot read header line: ${line}`);
-    if (value.trim() === "") {
-      parentKey = key;
-      result[key] = null;
-    } else {
-      parentKey = null;
-      result[key] = parseScalar(value);
-    }
-  }
-  return result;
-}
-
-function parsePostFile(text) {
-  const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
-  if (!match) throw new Error("No YAML header between --- lines");
-  return { header: parseHeader(match[1]), body: match[2].trim() };
-}
 
 // ---- Checks, so a bad file stops before anything is written ----
 

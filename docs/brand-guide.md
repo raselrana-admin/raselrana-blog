@@ -24,7 +24,7 @@ The main site and the blog are two apps under one address: the main site at `/` 
 Rasel's logo files are on Rasel's computer, in:
 
 ```
-E:\my_website-blog\Website Info\rasel-rana-logo\
+E:\02_Dev_Projects\my_website-blog\Doc\Website Info\rasel-rana-logo\
 ├── favicon\   apple-touch-icon.png, favicon-16.png, favicon-32.png, favicon-48.png,
 │              favicon.ico, icon-192.png, icon-512.png, icon.svg
 ├── png\       rasel-rana-logo.png, rasel-rana-logo-on-dark.png,
@@ -56,7 +56,7 @@ The `src/app/` file names follow Next.js's icon conventions, so Next serves them
 
 ### 2.3 The logo in code (not as image files)
 
-On pages the logo is drawn as inline SVG from shared data, so it is crisp, needs no image request, and the "Rasel Rana" letters can follow the theme. Create these three files. They are identical to the main site's (`E:\my_website-blog\raselrana-web\src\…`); the full text of each is in **Appendix A**:
+On pages the logo is drawn as inline SVG from shared data, so it is crisp, needs no image request, and the "Rasel Rana" letters can follow the theme. Create these three files. They are identical to the main site's (`E:\02_Dev_Projects\my_website-blog\raselrana-web\src\…`); the full text of each is in **Appendix A**:
 
 | Blog file | Main site source | What it is |
 |---|---|---|

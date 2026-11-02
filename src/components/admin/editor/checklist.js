@@ -8,6 +8,12 @@ function withoutCode(markdown) {
   return markdown.replace(/```[\s\S]*?```/g, "").replace(/~~~[\s\S]*?~~~/g, "");
 }
 
+/** How many [PHOTO: …] notes a post written as a file still has. */
+export function countPhotoPlaceholders(markdown) {
+  const prose = withoutCode(markdown).replace(/`[^`\n]*`/g, "");
+  return prose.match(/\[PHOTO:/g)?.length ?? 0;
+}
+
 /**
  * The pre-publish checklist (docs/BLOG_ADMIN_SPEC.md §7.4).
  * `errors` block publishing; `warnings` may be ignored.
@@ -32,6 +38,12 @@ export function buildChecklist({
   if (!title.trim()) errors.push("Add a title.");
   if (!slug.trim()) errors.push("Add a slug.");
   if (!content.trim()) errors.push("The post has no content.");
+  const placeholders = countPhotoPlaceholders(content);
+  if (placeholders > 0) {
+    errors.push(
+      `Replace the ${placeholders === 1 ? "[PHOTO: …] placeholder" : `${placeholders} [PHOTO: …] placeholders`} with images.`,
+    );
+  }
   if (!categoryId) errors.push("Choose a category.");
   if (!featuredImage) {
     errors.push("Add a featured image.");

@@ -1,6 +1,9 @@
 "use client";
 
-import { buildChecklist } from "@/components/admin/editor/checklist";
+import {
+  buildChecklist,
+  countPhotoPlaceholders,
+} from "@/components/admin/editor/checklist";
 import MarkdownEditor from "@/components/admin/editor/MarkdownEditor";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { useToast } from "@/components/admin/Toast";
@@ -8,6 +11,7 @@ import ImageUploader from "@/components/media/ImageUploader";
 import Markdown from "@/components/mdx/Markdown";
 import { cloudinaryUrl } from "@/lib/cloudinary-loader";
 import { CONTENT_TYPES, DEFAULT_CONTENT_TYPE } from "@/lib/content-types";
+import { parsePostFile } from "@/lib/post-file";
 import { slugify } from "@/lib/posts";
 import {
   buttonPrimary,
@@ -23,6 +27,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 const MAX_TAGS = 8;
+const MAX_TAG_LENGTH = 40;
+const MAX_TITLE_LENGTH = 200;
+const MAX_SLUG_LENGTH = 120;
+const MAX_IMPORT_BYTES = 1024 * 1024;
 const MAX_EXCERPT_LENGTH = 300;
 const MAX_ALT_LENGTH = 200;
 const MAX_SEO_TITLE = 60;
@@ -52,6 +60,15 @@ const toDhakaInput = (iso) =>
     ? new Date(new Date(iso).getTime() + DHAKA_OFFSET_MS).toISOString().slice(0, 16)
     : "";
 const fromDhakaInput = (value) => (value ? new Date(`${value}:00+06:00`) : null);
+
+// "2026-11-05 09:30" or "2026-11-05" (09:00) from a post file, as the date input
+// wants it. Null when it cannot be read.
+const dateFromFile = (text) => {
+  const match = text.trim().match(/^(\d{4}-\d{2}-\d{2})(?:[ T](\d{2}:\d{2}))?$/);
+  if (!match) return null;
+  const value = `${match[1]}T${match[2] ?? "09:00"}`;
+  return Number.isNaN(fromDhakaInput(value).getTime()) ? null : value;
+};
 
 const clock = () =>
   new Intl.DateTimeFormat("en-GB", {
@@ -88,6 +105,8 @@ export default function PostEditor({
 }) {
   const editorRef = useRef(null);
   const checklistRef = useRef(null);
+  const importInputRef = useRef(null);
+  const importDialogRef = useRef(null);
 
   // A new post gets its id on the first save; the page is not reloaded for that.
   const [postId, setPostId] = useState(post?.id ?? null);
@@ -128,6 +147,10 @@ export default function PostEditor({
   const [saveState, setSaveState] = useState(""); // "Saved at 18:42" etc.
   const [error, setError] = useState(null);
   const [checklist, setChecklist] = useState(null); // { errors, warnings, target }
+  const [pendingImport, setPendingImport] = useState(null); // parsed file waiting for a yes
+  const [importNotes, setImportNotes] = useState(null); // { name, notes } after an import
+  // From the file, until an image is uploaded. Never sent: an image without a url is invalid.
+  const [importedCover, setImportedCover] = useState(null); // { alt, suggestion }
 
   // Everything that is stored, except the status (that is chosen by the button).
   const fields = useMemo(
@@ -274,6 +297,20 @@ export default function PostEditor({
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty]);
 
+  // The slug has to be free; only the server knows. Null when it is, or when the
+  // check itself fails: the save checks again.
+  const slugProblem = async (value) => {
+    try {
+      const query = new URLSearchParams({ slug: slugify(value) });
+      if (postId) query.set("except", postId);
+      const res = await fetch(`${basePath}/api/posts/slug-check?${query}`);
+      const check = await res.json();
+      return res.ok && !check.available ? check.reason : null;
+    } catch {
+      return null;
+    }
+  };
+
   // ---- Going public: run the checklist first ----
 
   const goPublic = async (target) => {
@@ -287,19 +324,9 @@ export default function PostEditor({
       now,
     });
 
-    // The slug has to be free; only the server knows.
     if (slug.trim()) {
-      try {
-        const query = new URLSearchParams({ slug: slugify(slug) });
-        if (postId) query.set("except", postId);
-        const res = await fetch(`${basePath}/api/posts/slug-check?${query}`);
-        const check = await res.json();
-        if (res.ok && !check.available) {
-          result.errors.push(`Slug: ${check.reason}.`);
-        }
-      } catch {
-        // The save itself checks again.
-      }
+      const problem = await slugProblem(slug);
+      if (problem) result.errors.push(`Slug: ${problem}.`);
     }
 
     if (result.errors.length === 0 && result.warnings.length === 0) {
@@ -336,6 +363,10 @@ export default function PostEditor({
     if (!slugEdited) setSlug(slugify(value));
   };
 
+  // Reuse the existing spelling if this topic is already known.
+  const knownTag = (tag) =>
+    tagSuggestions.find((t) => t.toLowerCase() === tag.toLowerCase()) ?? tag;
+
   const addTag = (raw) => {
     const tag = raw.trim().replace(/\s+/g, " ");
     setTagDraft("");
@@ -344,9 +375,7 @@ export default function PostEditor({
       setError(`A post can have at most ${MAX_TAGS} topics`);
       return;
     }
-    // Reuse the existing spelling if this topic is already known.
-    const known = tagSuggestions.find((t) => t.toLowerCase() === tag.toLowerCase());
-    const value = known ?? tag;
+    const value = knownTag(tag);
     if (tags.some((t) => slugify(t) === slugify(value))) return;
     setTags([...tags, value]);
   };
@@ -358,6 +387,161 @@ export default function PostEditor({
     } else if (e.key === "Backspace" && !tagDraft && tags.length > 0) {
       setTags(tags.slice(0, -1));
     }
+  };
+
+  // ---- Import a post written as a .md file ----
+
+  // Fills the fields the file has a value for and lists what still needs attention.
+  // The status never changes, so publishing stays a separate step.
+  const applyImport = async ({ name, header, body }) => {
+    const notes = [];
+    const tooLong = (label, value, max) => {
+      if (value.length > max) {
+        notes.push(`${label} is ${value.length} characters (at most ${max}).`);
+      }
+    };
+
+    if (header.title) {
+      handleTitleChange(header.title);
+      tooLong("Title", header.title, MAX_TITLE_LENGTH);
+    }
+    if (header.slug) {
+      setSlug(slugify(header.slug));
+      setSlugEdited(true);
+      tooLong("Slug", header.slug, MAX_SLUG_LENGTH);
+    }
+    if (header.excerpt) {
+      setExcerpt(header.excerpt);
+      tooLong("Excerpt", header.excerpt, MAX_EXCERPT_LENGTH);
+    }
+    if (body) setContent(body);
+
+    if (header.category) {
+      const wanted = header.category.toLowerCase();
+      const category = categories.find((c) => c.name.toLowerCase() === wanted);
+      if (category) setCategoryId(category.id);
+      else notes.push(`Category “${header.category}” does not exist. Choose one.`);
+    }
+    if (header.contentType) {
+      const wanted = header.contentType.toLowerCase();
+      const type = CONTENT_TYPES.find((t) => t.label.toLowerCase() === wanted);
+      if (type) setContentType(type.value);
+      else notes.push(`Content type “${header.contentType}” is not known. Choose one.`);
+    }
+
+    if (header.topics.length > 0) {
+      const unique = [];
+      for (const topic of header.topics) {
+        const value = knownTag(topic.replace(/\s+/g, " "));
+        if (value.length > MAX_TAG_LENGTH || !slugify(value)) {
+          notes.push(`Topic “${value}” left out: not valid, or over ${MAX_TAG_LENGTH} characters.`);
+        } else if (!unique.some((t) => slugify(t) === slugify(value))) {
+          unique.push(value);
+        }
+      }
+      if (unique.length > MAX_TAGS) {
+        notes.push(`Topics left out, over ${MAX_TAGS}: ${unique.slice(MAX_TAGS).join(", ")}.`);
+      }
+      setTags(unique.slice(0, MAX_TAGS));
+      setTagDraft("");
+    }
+
+    if (header.relatedPosts.length > 0) {
+      const found = [];
+      for (const wanted of header.relatedPosts) {
+        const option = postOptions.find((o) => o.slug === wanted && o.id !== postId);
+        if (option) found.push(option.id);
+        else notes.push(`Related post “${wanted}” was not found.`);
+      }
+      if (found.length > MAX_RELATED) {
+        notes.push(`Only the first ${MAX_RELATED} related posts were kept.`);
+      }
+      if (found.length > 0) setRelatedPostIds(found.slice(0, MAX_RELATED));
+    }
+
+    if (header.publishDate && !isPublished) {
+      const date = dateFromFile(header.publishDate);
+      if (date) setScheduleAt(date);
+      else notes.push(`Publish date “${header.publishDate}” could not be read (use 2026-11-05 09:30).`);
+    }
+
+    if (header.seoTitle) {
+      setSeoTitle(header.seoTitle);
+      tooLong("SEO title", header.seoTitle, MAX_SEO_TITLE);
+    }
+    if (header.seoDescription) {
+      setSeoDescription(header.seoDescription);
+      tooLong("SEO description", header.seoDescription, MAX_SEO_DESCRIPTION);
+    }
+    if (header.showOnMainSite !== undefined) setShowOnMainSite(header.showOnMainSite);
+    if (header.noindex !== undefined) setNoindex(header.noindex);
+
+    const alt = header.featuredImage?.alt;
+    if (alt) tooLong("Featured image description", alt, MAX_ALT_LENGTH);
+    if (featuredImage) {
+      if (alt) setFeaturedImage({ ...featuredImage, alt });
+    } else {
+      setImportedCover(header.featuredImage ?? null);
+      notes.push("Add a featured image.");
+    }
+
+    const placeholders = countPhotoPlaceholders(body);
+    if (placeholders > 0) {
+      notes.push(
+        `Replace ${placeholders === 1 ? "the [PHOTO: …] placeholder" : `the ${placeholders} [PHOTO: …] placeholders`}: select the line, then press Image.`,
+      );
+    }
+
+    const nextSlug = header.slug ?? (header.title && !slugEdited ? header.title : slug);
+    const problem = nextSlug.trim() ? await slugProblem(nextSlug) : null;
+    if (problem) notes.push(`Slug: ${problem}. Change it before saving.`);
+
+    setError(null);
+    setImportNotes({ name, notes });
+    toast(`Imported ${name}`);
+  };
+
+  const handleImportFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow picking the same file again
+    if (!file) return;
+
+    if (!/\.(md|markdown)$/i.test(file.name)) {
+      setError("Choose a Markdown file (.md)");
+      return;
+    }
+    if (file.size > MAX_IMPORT_BYTES) {
+      setError("That file is over 1 MB. Is it the right one?");
+      return;
+    }
+
+    let parsed;
+    try {
+      parsed = parsePostFile(await file.text());
+    } catch (err) {
+      setError(`Could not read ${file.name}. ${err.message}`);
+      return;
+    }
+    if (!parsed.header.title && !parsed.body) {
+      setError(`${file.name} has no title and no content`);
+      return;
+    }
+
+    const imported = { name: file.name, ...parsed };
+    if (title.trim() || content.trim()) {
+      setPendingImport(imported);
+      importDialogRef.current?.showModal();
+    } else {
+      await applyImport(imported);
+    }
+  };
+
+  const closeImportDialog = () => importDialogRef.current?.close();
+
+  const confirmImport = async () => {
+    const imported = pendingImport;
+    closeImportDialog();
+    if (imported) await applyImport(imported);
   };
 
   // ---- Toolbar ----
@@ -473,6 +657,24 @@ export default function PostEditor({
         </div>
 
         <div className="flex flex-wrap gap-2">
+          <input
+            ref={importInputRef}
+            type="file"
+            accept=".md,.markdown,text/markdown"
+            onChange={handleImportFile}
+            className="sr-only"
+            tabIndex={-1}
+            aria-hidden
+          />
+          <button
+            type="button"
+            onClick={() => importInputRef.current?.click()}
+            disabled={saving}
+            title="Fill this post from a Markdown file. Nothing is published."
+            className={buttonSmall}
+          >
+            Import .md file
+          </button>
           {postId && (
             <Link
               href={`/preview/${postId}`}
@@ -546,6 +748,34 @@ export default function PostEditor({
           )}
         </div>
       </div>
+
+      {/* What an import left to do */}
+      {importNotes && (
+        <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4">
+          <div className="flex items-start justify-between gap-4">
+            <p className="text-sm font-medium text-[var(--ink)]">
+              {importNotes.notes.length > 0
+                ? `Imported ${importNotes.name}. Still to do:`
+                : `Imported ${importNotes.name}. Check it, then publish.`}
+            </p>
+            <button
+              type="button"
+              onClick={() => setImportNotes(null)}
+              aria-label="Close the import notes"
+              className="px-1 text-[var(--slate)] hover:text-[var(--danger)]"
+            >
+              ×
+            </button>
+          </div>
+          {importNotes.notes.length > 0 && (
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-[var(--slate)]">
+              {importNotes.notes.map((note) => (
+                <li key={note}>{note}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       {/* Phones show one pane at a time; wide screens show the editor beside the preview. */}
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -717,6 +947,14 @@ export default function PostEditor({
             Shown on the post card and at the top of the post, and used as the
             picture when the link is shared on social media.
           </p>
+          {importedCover && !featuredImage && (
+            <div className="mb-3 space-y-1 text-xs text-[var(--slate)]">
+              {importedCover.suggestion && <p>Idea from the file: {importedCover.suggestion}</p>}
+              {importedCover.alt && (
+                <p>Description from the file, filled in on upload: {importedCover.alt}</p>
+              )}
+            </div>
+          )}
           <div className="flex flex-wrap items-start gap-4">
             {featuredImage && (
               // eslint-disable-next-line @next/next/no-img-element -- small admin preview
@@ -737,7 +975,7 @@ export default function PostEditor({
                       publicId: image.publicId,
                       width: image.width,
                       height: image.height,
-                      alt: featuredImage?.alt ?? "",
+                      alt: featuredImage?.alt || importedCover?.alt || "",
                     })
                   }
                 />
@@ -1043,6 +1281,33 @@ export default function PostEditor({
           )}
         </div>
       </div>
+
+      {/* Importing over a post that already has text */}
+      <dialog
+        ref={importDialogRef}
+        aria-labelledby="import-title"
+        onClose={() => setPendingImport(null)}
+        className="m-auto w-[min(92vw,34rem)] rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-7 text-[var(--ink)]"
+      >
+        <h2 id="import-title" className="font-display text-xl font-medium">
+          Replace this post with {pendingImport?.name}?
+        </h2>
+        <p className="mt-3 text-sm text-[var(--slate)]">
+          Every field with a value in the file is replaced, including the
+          content.{" "}
+          {isDraft
+            ? "Drafts save by themselves a few seconds later, so the current text cannot be brought back."
+            : "Nothing is saved until you press the save button."}
+        </p>
+        <div className="mt-6 flex flex-wrap justify-end gap-3">
+          <button type="button" onClick={closeImportDialog} className={buttonSecondary}>
+            Keep this post
+          </button>
+          <button type="button" onClick={confirmImport} className={buttonPrimary}>
+            Replace
+          </button>
+        </div>
+      </dialog>
 
       {/* Pre-publish checklist */}
       <dialog
