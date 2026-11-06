@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Search box suggests "GPON, VoIP, Arduino" to match the current categories.
 - Editor: "Import .md file" fills the settings and content from a post written as a Markdown file, shows it in the preview and lists what is left to do. Nothing is published, and a post with a `[PHOTO: …]` placeholder cannot be published.
 - The "Start from what you need" panel is calmer and clearer: no signal arcs, each row leads with what the reader needs ("Set something up") with the post type under it, a short line explains the panel, and the type sizes and spacing follow one scale.
 
