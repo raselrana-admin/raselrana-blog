@@ -174,7 +174,7 @@ Every published post needs one category; topics and the rest are what make it fi
 
 | Setting | Rule |
 | --- | --- |
-| Category | Exactly one, the field the post belongs to: Telecommunications, Networking, GPON & Fiber Optics, VoIP & IP-PBX or IT & Technology. Needed to publish. Pick the most specific one. |
+| Category | Exactly one, the field the post belongs to: Telecommunications, GPON & Fiber Optics, VoIP & IP-PBX, IT & Technology or Robotics & Arduino. Needed to publish. Pick the most specific one. |
 | Content type | The type you chose in "Pick the post type first". |
 | Topics | 3–8 specific terms a reader would search for: equipment, protocols, measurements (ONT, PPPoE, dBm, VLAN). Pick from the suggestions before typing a new one, so one topic is not spelled two ways. Do not repeat the category name. The editor warns below 3. |
 | Related posts | Up to 4, chosen by hand. Link the post a reader needs next or before this one. Any free places are filled with posts that share the most topics, then posts from the same category. |

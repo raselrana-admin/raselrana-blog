@@ -16,7 +16,7 @@ export default function SearchForm({ defaultValue = "" }) {
           type="search"
           name="q"
           defaultValue={defaultValue}
-          placeholder="GPON, MikroTik, battery backup…"
+          placeholder="GPON, VoIP, Arduino…"
           maxLength={80}
           className={input}
         />
